@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace ReportDebtCreators
 {
-    public partial class Form1 : Form
+    public partial class MainCreatorsForm : Form
     {
-        public Form1()
+        public MainCreatorsForm()
         {
             InitializeComponent();
 

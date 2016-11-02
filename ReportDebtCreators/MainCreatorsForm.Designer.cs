@@ -1,6 +1,6 @@
 ﻿namespace ReportDebtCreators
 {
-    partial class Form1
+    partial class MainCreatorsForm
     {
         /// <summary>
         /// Обязательная переменная конструктора.
