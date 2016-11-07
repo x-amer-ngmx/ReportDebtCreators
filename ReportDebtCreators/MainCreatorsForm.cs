@@ -28,6 +28,19 @@ namespace ReportDebtCreators
             PackageLasts.ValueMember = "AbsolutPatch";
         }
 
+        private void TemplateLasts_SelectedValueChanged(object sender, EventArgs e)
+        {
+            //MessageBox.Show("Changed");
+        }
 
+        private void TemplateLasts_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //MessageBox.Show("Changed");
+        }
+
+        private void CloseApp_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
     }
 }

@@ -1,15 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Configuration;
+using System.IO;
 using System.Windows.Forms;
 using ReportDebtCreators.enginer;
 using ReportDebtCreators.Properties;
+
 
 namespace ReportDebtCreators
 {
     static class Program
     {
+
+        private static string _dirTemp;
+        private static string _dirEng;
+        private static string _dirResRep;
+        private static string _dirCompil;
         /// <summary>
         /// Главная точка входа для приложения.
         /// </summary>
@@ -19,10 +24,13 @@ namespace ReportDebtCreators
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            RunApp();
+            var defaultPach = ConfigurationManager.AppSettings["rootPachExel"];
+
+            if (string.IsNullOrEmpty(defaultPach)) RunApp();
+            else DetectRunApp(defaultPach,true);
         }
 
-        public static void RunApp(bool erFolder=false)
+        private static void RunApp(bool erFolder=false)
         {
 
             if (erFolder)
@@ -44,21 +52,7 @@ namespace ReportDebtCreators
             }
             else
             {
-
-                var getData = new ExelCreator(dialog.SelectedPath);
-
-                var temp = getData.ListTemplate();
-                var pack = getData.ListPackage();
-
-                if (temp == null || pack == null)
-                {
-                    RunApp(true);
-                }
-                else
-                {
-                    Application.Run(new MainCreatorsForm(temp, pack));
-                }
-
+                DetectRunApp(dialog.SelectedPath);
             }
             
         }
@@ -66,16 +60,53 @@ namespace ReportDebtCreators
         private static void Dialog(string title, string text)
         {
             var reflex = MessageBox.Show(title, text, MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
-            if (reflex == DialogResult.Cancel) ExitApp();
+            if (reflex == DialogResult.Cancel) Application.Exit();
             if (reflex == DialogResult.Retry)
             {
                 RunApp();
             }
         }
 
-        public static void ExitApp()
+        private static void DetectRunApp(string rootPatch, bool isConfig=false)
         {
-            Application.Exit();
+            var getData = new ExelCreator();
+
+            _dirTemp = $@"{rootPatch}\{ConfigurationManager.AppSettings["dirTemp"]}\";
+            _dirEng = $@"{rootPatch}\{ConfigurationManager.AppSettings["dirEng"]}\";
+            _dirResRep = $@"{rootPatch}\{ConfigurationManager.AppSettings["dirResRep"]}\";
+            _dirCompil = $@"{rootPatch}\{ConfigurationManager.AppSettings["dirCompil"]}\";
+
+            var dirExist = (
+                Directory.Exists(_dirTemp) &&
+                Directory.Exists(_dirEng) &&
+                Directory.Exists(_dirResRep) &&
+                Directory.Exists(_dirCompil)
+                );
+
+            if(!dirExist) { RunApp(true); return;}
+
+            var temp = getData.ListTemplate(_dirTemp);
+            var pack = getData.ListPackage(_dirEng);
+
+            if (temp == null || pack == null)
+            {
+                RunApp(true);
+            }
+            else
+            {
+                if(!isConfig) UpdateSetting("rootPachExel", rootPatch);
+                
+                Application.Run(new MainCreatorsForm(temp, pack));
+            }
+        }
+
+        private static void UpdateSetting(string key, string value)
+        {
+            var configuration = ConfigurationManager.OpenExeConfiguration(Application.ExecutablePath);
+            configuration.AppSettings.Settings[key].Value = value;
+            configuration.Save();
+
+            //ConfigurationManager.RefreshSection("appSettings");
         }
     }
 }

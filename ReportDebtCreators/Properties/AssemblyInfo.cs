@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 // Управление общими сведениями о сборке осуществляется с помощью 
 // набора атрибутов. Измените значения этих атрибутов, чтобы изменить сведения,
 // связанные со сборкой.
-[assembly: AssemblyTitle("ReportDebtCreators")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Report Debt")]
+[assembly: AssemblyDescription("Костыль, для обработки и генерации xls. Некое подобие Server-Cient технологии..")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ReportDebtCreators")]
