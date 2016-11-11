@@ -55,6 +55,8 @@
   <ItemGroup>
     <Compile Include="enginer\ExelCreator.cs" />
     <Compile Include="enginer\ExelEnginer.cs" />
+    <Compile Include="enginer\ExelKernel.cs" />
+    <Compile Include="enginer\Global.cs" />
     <Compile Include="MainCreatorsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -77,6 +79,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="Properties\DataSources\ReportDebtCreators.model.StructExelModel.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

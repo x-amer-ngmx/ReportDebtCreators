@@ -11,10 +11,15 @@ namespace ReportDebtCreators
     static class Program
     {
 
-        private static string _dirTemp;
-        private static string _dirEng;
-        private static string _dirResRep;
-        private static string _dirCompil;
+        public static string DirTemp { private set; get; }
+        public static string DirEng { private set; get; }
+        public static string DirResRep { private set; get; }
+        public static string DirCompil { private set; get; }
+
+        public static string Pws { private set; get; }
+        public static string RootPatch { private set; get; }
+
+
         /// <summary>
         /// Главная точка входа для приложения.
         /// </summary>
@@ -24,10 +29,11 @@ namespace ReportDebtCreators
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            var defaultPach = ConfigurationManager.AppSettings["rootPachExel"];
+            RootPatch = ConfigurationManager.AppSettings["rootPachExel"];
+            Pws = ConfigurationManager.AppSettings["rootPachExel"];
 
-            if (string.IsNullOrEmpty(defaultPach)) RunApp();
-            else DetectRunApp(defaultPach,true);
+            if (string.IsNullOrEmpty(RootPatch)) RunApp();
+            else DetectRunApp(true);
         }
 
         private static void RunApp(bool erFolder=false)
@@ -52,7 +58,8 @@ namespace ReportDebtCreators
             }
             else
             {
-                DetectRunApp(dialog.SelectedPath);
+                RootPatch = dialog.SelectedPath;
+                DetectRunApp();
             }
             
         }
@@ -67,26 +74,26 @@ namespace ReportDebtCreators
             }
         }
 
-        private static void DetectRunApp(string rootPatch, bool isConfig=false)
+        private static void DetectRunApp(bool isConfig=false)
         {
             var getData = new ExelCreator();
 
-            _dirTemp = $@"{rootPatch}\{ConfigurationManager.AppSettings["dirTemp"]}\";
-            _dirEng = $@"{rootPatch}\{ConfigurationManager.AppSettings["dirEng"]}\";
-            _dirResRep = $@"{rootPatch}\{ConfigurationManager.AppSettings["dirResRep"]}\";
-            _dirCompil = $@"{rootPatch}\{ConfigurationManager.AppSettings["dirCompil"]}\";
+            DirTemp = $@"{RootPatch}\{ConfigurationManager.AppSettings["dirTemp"]}\";
+            DirEng = $@"{RootPatch}\{ConfigurationManager.AppSettings["dirEng"]}\";
+            DirResRep = $@"{RootPatch}\{ConfigurationManager.AppSettings["dirResRep"]}\";
+            DirCompil = $@"{RootPatch}\{ConfigurationManager.AppSettings["dirCompil"]}\";
 
             var dirExist = (
-                Directory.Exists(_dirTemp) &&
-                Directory.Exists(_dirEng) &&
-                Directory.Exists(_dirResRep) &&
-                Directory.Exists(_dirCompil)
+                Directory.Exists(DirTemp) &&
+                Directory.Exists(DirEng) &&
+                Directory.Exists(DirResRep) &&
+                Directory.Exists(DirCompil)
                 );
 
             if(!dirExist) { RunApp(true); return;}
-
-            var temp = getData.ListTemplate(_dirTemp);
-            var pack = getData.ListPackage(_dirEng);
+            
+            var temp = getData.ListTemplate(DirTemp);
+            var pack = getData.ListPackage(DirEng);
 
             if (temp == null || pack == null)
             {
@@ -94,7 +101,7 @@ namespace ReportDebtCreators
             }
             else
             {
-                if(!isConfig) UpdateSetting("rootPachExel", rootPatch);
+                if(!isConfig) UpdateSetting("rootPachExel", RootPatch);
                 
                 Application.Run(new MainCreatorsForm(temp, pack));
             }

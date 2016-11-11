@@ -10,5 +10,6 @@ namespace ReportDebtCreators.model
     {
         public string Name { get; set; }
         public string AbsolutPatch { get; set; }
+        public DateTime? DateIndex { get; set; }
     }
 }

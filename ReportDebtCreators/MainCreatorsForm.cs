@@ -14,9 +14,11 @@ namespace ReportDebtCreators
 {
     public partial class MainCreatorsForm : Form
     {
+        private IList<StructExelModel> fromPack;
         public MainCreatorsForm(IReadOnlyCollection<StructExelModel> temp, IReadOnlyCollection<StructExelModel> pack)
         {
 
+            fromPack = (IList<StructExelModel>) pack;
             InitializeComponent();
 
             TemplateLasts.DataSource = temp;
@@ -26,6 +28,18 @@ namespace ReportDebtCreators
             PackageLasts.DataSource = pack;
             PackageLasts.DisplayMember = "Name";
             PackageLasts.ValueMember = "AbsolutPatch";
+
+
+            IList<StructExelModel> rr = (from p in fromPack orderby p.DateIndex ascending select p).ToList();
+
+            PackFromList.DataSource = rr;
+            PackFromList.DisplayMember = "Name";
+            PackFromList.ValueMember = "AbsolutPatch";
+
+            PackToList.DisplayMember = "Name";
+            PackToList.ValueMember = "AbsolutPatch";
+
+            PanelUnvis();
         }
 
         private void TemplateLasts_SelectedValueChanged(object sender, EventArgs e)
@@ -42,5 +56,105 @@ namespace ReportDebtCreators
         {
             Application.Exit();
         }
+
+        private void ChReportRoot_CheckedChanged(object sender, EventArgs e)
+        {
+            PanelUnvis();
+        }
+
+        private void PanelUnvis()
+        {
+            panel2.Visible = !ChReportRoot.Checked;
+        }
+
+        private void PackageLasts_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CountPackFile.Visible = true;
+
+            var select = (StructExelModel)PackageLasts.SelectedItem;
+
+            var res = ExelCreator.ListPackageFiles(select.AbsolutPatch);
+            
+            CountPackFile.Text = $"Всего в пакете {res.Count} файлов.";
+        }
+
+        private void PackFromList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var select = (StructExelModel)PackFromList.SelectedItem;
+
+            var d = ExelCreator.PackageNameAnalisator(select.Name);
+
+            var m = fromPack.Max(x => x.DateIndex);
+
+            IList<StructExelModel> result = (from p in fromPack
+                                             orderby p.DateIndex descending 
+                                             where (p.DateIndex > d && p.DateIndex <= m)
+                                             select p).ToList();
+
+            var cou = result.Sum(exelModel => ExelCreator.ListPackageFiles(exelModel.AbsolutPatch).Count);
+
+
+            //IList<StructExelModel> rr = (from p in fromPack orderby p.DateIndex descending select p).ToList();
+            PackToList.DataSource = result;
+
+
+            if(ChRangPack.Checked)
+            CountPackFile.Text = $"Всего в пакете {cou} файлов.";
+        }
+
+        private void PackToList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ChRangPack_CheckedChanged(object sender, EventArgs e)
+        {
+            if (ChRangPack.Checked)
+            {
+                PackFromList.SelectedIndex = 0;
+                PackFromList_SelectedIndexChanged(PackFromList, new EventArgs());
+
+                panelRangePack.Visible = true;
+                panelRangePack.Location = new Point(4, 30);
+                panelPack.Visible = false;
+            }
+        }
+
+        private void ChPack_CheckedChanged(object sender, EventArgs e)
+        {
+            if (ChPack.Checked)
+            {
+                panelRangePack.Visible = false;
+                panelPack.Visible = true;
+                PackageLasts.SelectedIndex = 0;
+                PackageLasts_SelectedIndexChanged(PackFromList, new EventArgs());
+            }
+        }
+
+        private void CreatePack_Click(object sender, EventArgs e)
+        {
+            var exl = new ExelEnginer("");
+            var x= (StructExelModel)TemplateLasts.SelectedItem;
+
+            exl.CreatePackFile(x.AbsolutPatch,"");
+        }
+        /*
+private void PackFromList_SelectedIndexChanged_1(object sender, EventArgs e)
+{
+var select = (StructExelModel)PackageLasts.SelectedItem;
+
+var d = ExelCreator.PackageNameAnalisator(select.Name);
+
+var m = fromPack.Max(x => x.DateIndex);
+
+IList<StructExelModel> result = (from p in fromPack orderby p.DateIndex
+    where (p.DateIndex >= d && p.DateIndex <= m)
+    select p).ToList();
+
+//IList<StructExelModel> rr = (from p in fromPack orderby p.DateIndex descending select p).ToList();
+PackToList.DataSource = result;
+PackToList.DisplayMember = "Name";
+PackToList.ValueMember = "AbsolutPatch";
+}*/
     }
 }

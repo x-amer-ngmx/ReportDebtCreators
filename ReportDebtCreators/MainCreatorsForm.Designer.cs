@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.TemplateLasts = new System.Windows.Forms.ComboBox();
             this.PackageLasts = new System.Windows.Forms.ComboBox();
             this.ChReportRoot = new System.Windows.Forms.RadioButton();
@@ -37,24 +38,32 @@
             this.CreatePack = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.PackFromList = new System.Windows.Forms.ComboBox();
+            this.structExelModelBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.PackToList = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.ChPack = new System.Windows.Forms.RadioButton();
             this.ChRangPack = new System.Windows.Forms.RadioButton();
             this.MethodGroup = new System.Windows.Forms.Panel();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.panelRangePack = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.CountPackFile = new System.Windows.Forms.Label();
+            this.panelPack = new System.Windows.Forms.Panel();
             this.GenirateRepotr = new System.Windows.Forms.Button();
             this.CloseApp = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.structExelModelBindingSource)).BeginInit();
             this.MethodGroup.SuspendLayout();
-            this.panel1.SuspendLayout();
+            this.panelRangePack.SuspendLayout();
             this.panel2.SuspendLayout();
+            this.panelPack.SuspendLayout();
             this.SuspendLayout();
             // 
             // TemplateLasts
             // 
+            this.TemplateLasts.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.TemplateLasts.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.TemplateLasts.FormattingEnabled = true;
+            this.TemplateLasts.ImeMode = System.Windows.Forms.ImeMode.Disable;
             this.TemplateLasts.Location = new System.Drawing.Point(114, 15);
             this.TemplateLasts.MinimumSize = new System.Drawing.Size(121, 0);
             this.TemplateLasts.Name = "TemplateLasts";
@@ -65,11 +74,15 @@
             // 
             // PackageLasts
             // 
+            this.PackageLasts.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.PackageLasts.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.PackageLasts.FormattingEnabled = true;
-            this.PackageLasts.Location = new System.Drawing.Point(6, 36);
+            this.PackageLasts.ImeMode = System.Windows.Forms.ImeMode.Disable;
+            this.PackageLasts.Location = new System.Drawing.Point(2, 6);
             this.PackageLasts.Name = "PackageLasts";
-            this.PackageLasts.Size = new System.Drawing.Size(252, 21);
+            this.PackageLasts.Size = new System.Drawing.Size(315, 21);
             this.PackageLasts.TabIndex = 5;
+            this.PackageLasts.SelectedIndexChanged += new System.EventHandler(this.PackageLasts_SelectedIndexChanged);
             // 
             // ChReportRoot
             // 
@@ -82,6 +95,7 @@
             this.ChReportRoot.TabStop = true;
             this.ChReportRoot.Text = "Для руководства";
             this.ChReportRoot.UseVisualStyleBackColor = true;
+            this.ChReportRoot.CheckedChanged += new System.EventHandler(this.ChReportRoot_CheckedChanged);
             // 
             // ChReportAdmin
             // 
@@ -119,6 +133,7 @@
             this.CreatePack.TabIndex = 2;
             this.CreatePack.Text = "Сформировать пакет по филлиалам";
             this.CreatePack.UseVisualStyleBackColor = true;
+            this.CreatePack.Click += new System.EventHandler(this.CreatePack_Click);
             // 
             // label3
             // 
@@ -131,17 +146,32 @@
             // 
             // PackFromList
             // 
+            this.PackFromList.DataBindings.Add(new System.Windows.Forms.Binding("SelectedValue", this.structExelModelBindingSource, "AbsolutPatch", true));
+            this.PackFromList.DataSource = this.structExelModelBindingSource;
+            this.PackFromList.DisplayMember = "Name";
+            this.PackFromList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.PackFromList.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.PackFromList.FormattingEnabled = true;
-            this.PackFromList.Location = new System.Drawing.Point(30, 15);
+            this.PackFromList.ImeMode = System.Windows.Forms.ImeMode.Disable;
+            this.PackFromList.Location = new System.Drawing.Point(30, 6);
             this.PackFromList.Name = "PackFromList";
             this.PackFromList.Size = new System.Drawing.Size(121, 21);
             this.PackFromList.TabIndex = 6;
             this.PackFromList.TabStop = false;
+            this.PackFromList.ValueMember = "AbsolutPatch";
+            this.PackFromList.SelectedIndexChanged += new System.EventHandler(this.PackFromList_SelectedIndexChanged);
+            // 
+            // structExelModelBindingSource
+            // 
+            this.structExelModelBindingSource.DataSource = typeof(ReportDebtCreators.model.StructExelModel);
             // 
             // PackToList
             // 
+            this.PackToList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.PackToList.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.PackToList.FormattingEnabled = true;
-            this.PackToList.Location = new System.Drawing.Point(197, 15);
+            this.PackToList.ImeMode = System.Windows.Forms.ImeMode.Disable;
+            this.PackToList.Location = new System.Drawing.Point(197, 6);
             this.PackToList.Name = "PackToList";
             this.PackToList.Size = new System.Drawing.Size(121, 21);
             this.PackToList.TabIndex = 7;
@@ -150,7 +180,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(5, 18);
+            this.label4.Location = new System.Drawing.Point(5, 9);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(19, 13);
             this.label4.TabIndex = 7;
@@ -159,7 +189,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(166, 18);
+            this.label5.Location = new System.Drawing.Point(166, 9);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(25, 13);
             this.label5.TabIndex = 9;
@@ -176,6 +206,7 @@
             this.ChPack.TabStop = true;
             this.ChPack.Text = "Пакет";
             this.ChPack.UseVisualStyleBackColor = true;
+            this.ChPack.CheckedChanged += new System.EventHandler(this.ChPack_CheckedChanged);
             // 
             // ChRangPack
             // 
@@ -186,6 +217,7 @@
             this.ChRangPack.TabIndex = 4;
             this.ChRangPack.Text = "Диапазон";
             this.ChRangPack.UseVisualStyleBackColor = true;
+            this.ChRangPack.CheckedChanged += new System.EventHandler(this.ChRangPack_CheckedChanged);
             // 
             // MethodGroup
             // 
@@ -198,31 +230,50 @@
             this.MethodGroup.TabIndex = 8;
             this.MethodGroup.TabStop = true;
             // 
-            // panel1
+            // panelRangePack
             // 
-            this.panel1.Controls.Add(this.label5);
-            this.panel1.Controls.Add(this.label4);
-            this.panel1.Controls.Add(this.PackToList);
-            this.panel1.Controls.Add(this.PackFromList);
-            this.panel1.Location = new System.Drawing.Point(264, 21);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(337, 47);
-            this.panel1.TabIndex = 6;
-            this.panel1.TabStop = true;
-            this.panel1.Visible = false;
+            this.panelRangePack.Controls.Add(this.label5);
+            this.panelRangePack.Controls.Add(this.label4);
+            this.panelRangePack.Controls.Add(this.PackToList);
+            this.panelRangePack.Controls.Add(this.PackFromList);
+            this.panelRangePack.Location = new System.Drawing.Point(3, 48);
+            this.panelRangePack.Name = "panelRangePack";
+            this.panelRangePack.Size = new System.Drawing.Size(569, 38);
+            this.panelRangePack.TabIndex = 6;
+            this.panelRangePack.TabStop = true;
+            this.panelRangePack.Visible = false;
             // 
             // panel2
             // 
+            this.panel2.Controls.Add(this.CountPackFile);
+            this.panel2.Controls.Add(this.panelPack);
             this.panel2.Controls.Add(this.label2);
-            this.panel2.Controls.Add(this.panel1);
-            this.panel2.Controls.Add(this.PackageLasts);
+            this.panel2.Controls.Add(this.panelRangePack);
             this.panel2.Controls.Add(this.ChPack);
             this.panel2.Controls.Add(this.ChRangPack);
             this.panel2.Location = new System.Drawing.Point(12, 51);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(503, 79);
+            this.panel2.Size = new System.Drawing.Size(562, 79);
             this.panel2.TabIndex = 3;
             this.panel2.TabStop = true;
+            // 
+            // CountPackFile
+            // 
+            this.CountPackFile.AutoSize = true;
+            this.CountPackFile.Location = new System.Drawing.Point(343, 41);
+            this.CountPackFile.Name = "CountPackFile";
+            this.CountPackFile.Size = new System.Drawing.Size(35, 13);
+            this.CountPackFile.TabIndex = 7;
+            this.CountPackFile.Text = "label6";
+            this.CountPackFile.Visible = false;
+            // 
+            // panelPack
+            // 
+            this.panelPack.Controls.Add(this.PackageLasts);
+            this.panelPack.Location = new System.Drawing.Point(4, 30);
+            this.panelPack.Name = "panelPack";
+            this.panelPack.Size = new System.Drawing.Size(333, 38);
+            this.panelPack.TabIndex = 8;
             // 
             // GenirateRepotr
             // 
@@ -259,12 +310,14 @@
             this.Name = "MainCreatorsForm";
             this.Text = "Формирование отчётов по должникам.";
             this.TopMost = true;
+            ((System.ComponentModel.ISupportInitialize)(this.structExelModelBindingSource)).EndInit();
             this.MethodGroup.ResumeLayout(false);
             this.MethodGroup.PerformLayout();
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
+            this.panelRangePack.ResumeLayout(false);
+            this.panelRangePack.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            this.panelPack.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -287,10 +340,13 @@
         private System.Windows.Forms.RadioButton ChPack;
         private System.Windows.Forms.RadioButton ChRangPack;
         private System.Windows.Forms.Panel MethodGroup;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panelRangePack;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Button GenirateRepotr;
         private System.Windows.Forms.Button CloseApp;
+        private System.Windows.Forms.Label CountPackFile;
+        private System.Windows.Forms.Panel panelPack;
+        private System.Windows.Forms.BindingSource structExelModelBindingSource;
     }
 }
 

@@ -12,13 +12,14 @@ namespace ReportDebtCreators.enginer
 {
     class ExelCreator
     {
+        //Получение путей к конечным файлам
 
         public List<StructExelModel> ListTemplate(string dir)
         {
             List<StructExelModel> result = null;
             try
             {
-                var file = new DirectoryInfo(dir).GetFiles("*.xltx");
+                var file = new DirectoryInfo(dir).GetFilesByExtensions(".xltx", ".xlt");
                 result = (from t in file select new StructExelModel {Name = t.Name.Split('.')[0], AbsolutPatch = t.FullName}).ToList();
             }
             catch (Exception ex)
@@ -37,12 +38,13 @@ namespace ReportDebtCreators.enginer
             try
             {
                 var file = new DirectoryInfo(patch).GetDirectories("*");
-                result = (from t in file where PackageNameAnalisator(t.Name) select new StructExelModel { Name = t.Name, AbsolutPatch = $"{t.FullName}\\" }).ToList();
+                result = (from t in file
+                          let id = PackageNameAnalisator(t.Name)
+                          where id != null
+                          orderby id descending
+                          select new StructExelModel { Name = t.Name, AbsolutPatch = $"{t.FullName}\\", DateIndex = id }).ToList();
 
-                foreach (var model in result)
-                {
-                    ListPackageFiles(model.AbsolutPatch);
-                }
+
             }
             catch (Exception ex)
             {
@@ -52,20 +54,15 @@ namespace ReportDebtCreators.enginer
             return result;
         }
 
-        public List<StructExelModel> ListPackageFiles(string patch)
+        public static List<StructExelModel> ListPackageFiles(string patch)
         {
             List<StructExelModel> result = null;
 
             try
             {
-                var files = new DirectoryInfo(patch).GetFiles("*.xlsx");
+                var files = new DirectoryInfo(patch).GetFilesByExtensions(".xlsx", ".xls");
                 result = (from t in files select new StructExelModel { Name = t.Name.Split('.')[0], AbsolutPatch = t.FullName }).ToList();
 
-                var ex = new ExelEnginer();
-                foreach (var model in result)
-                {
-                    ex.CreatePackFile(model.AbsolutPatch,"");
-                }
             }
             catch (Exception ex)
             {
@@ -75,17 +72,21 @@ namespace ReportDebtCreators.enginer
             return result;
         }
 
+
+        //Создание пакета для всех филлиалов
         public void CreatePackage(string patch)
         {
 
         }
 
-        //
+
+        //Формирование отчёта для руководства на основании пакета
         public void RootCreateReport()
         {
         }
 
-        //
+
+        //Формирование отчёта для Администрация на основании пакета
         public void AdminCreateReport()
         {
         }
@@ -99,10 +100,19 @@ namespace ReportDebtCreators.enginer
         }
 
         //Анализатор имён директорий, 
-        private static bool PackageNameAnalisator(string packName)
+        public static DateTime? PackageNameAnalisator(string packName)
         {
-            DateTime temp;
-            var result = DateTime.TryParse(packName, out temp);
+            DateTime? result = null;
+            try
+            {
+                result = DateTime.Parse(packName);
+            }
+            catch (Exception)
+            {
+                
+                //throw;
+            }
+            
 
             return result;
         }
