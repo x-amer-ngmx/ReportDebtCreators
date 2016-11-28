@@ -86,17 +86,11 @@ namespace ReportDebtCreators
 
             var m = fromPack.Max(x => x.DateIndex);
 
-            IList<StructExelModel> result = (from p in fromPack
-                                             orderby p.DateIndex descending 
-                                             where (p.DateIndex > d && p.DateIndex <= m)
-                                             select p).ToList();
+            var result = fromPack.GetRangePack(d, m);
 
             var cou = result.Sum(exelModel => ExelCreator.ListPackageFiles(exelModel.AbsolutPatch).Count);
 
-
-            //IList<StructExelModel> rr = (from p in fromPack orderby p.DateIndex descending select p).ToList();
             PackToList.DataSource = result;
-
 
             if(ChRangPack.Checked)
             CountPackFile.Text = $"Всего в пакете {cou} файлов.";
@@ -133,11 +127,34 @@ namespace ReportDebtCreators
 
         private void CreatePack_Click(object sender, EventArgs e)
         {
-            var exl = new ExelEnginer("");
-            var x= (StructExelModel)TemplateLasts.SelectedItem;
-
-            exl.CreatePackFile(x.AbsolutPatch,"");
+            var x = (StructExelModel)TemplateLasts.SelectedItem;
+            var exl = new ExelEnginer(x.AbsolutPatch, this);
+            exl.CreatePackFile("");
         }
+
+
+        private void GenirateRepotr_Click(object sender, EventArgs e)
+        {
+            var select = (StructExelModel)PackFromList.SelectedItem;
+
+            var d = ExelCreator.PackageNameAnalisator(select.Name);
+
+            var selectm = (StructExelModel)PackToList.SelectedItem;
+
+            var m = ExelCreator.PackageNameAnalisator(selectm.Name);
+
+            var obj = new ExelEnginer();
+            var pacck = obj.GetEngineFList(fromPack.GetRangePack(d, m));
+
+
+
+        }
+
+        public void SetInfoLable(string info)
+        {
+            label5.Text = info;
+        }
+
         /*
 private void PackFromList_SelectedIndexChanged_1(object sender, EventArgs e)
 {

@@ -283,6 +283,7 @@
             this.GenirateRepotr.TabIndex = 0;
             this.GenirateRepotr.Text = "Запустить формирование отчёта";
             this.GenirateRepotr.UseVisualStyleBackColor = true;
+            this.GenirateRepotr.Click += new System.EventHandler(this.GenirateRepotr_Click);
             // 
             // CloseApp
             // 
