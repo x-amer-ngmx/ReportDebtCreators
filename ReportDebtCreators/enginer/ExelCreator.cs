@@ -39,7 +39,7 @@ namespace ReportDebtCreators.enginer
             {
                 var file = new DirectoryInfo(patch).GetDirectories("*");
                 result = (from t in file
-                          let id = PackageNameAnalisator(t.Name)
+                          let id = t.Name.PacNameConvert()
                           where id != null
                           orderby id descending
                           select new StructExelModel { Name = t.Name, AbsolutPatch = $"{t.FullName}\\", DateIndex = id }).ToList();
@@ -98,27 +98,6 @@ namespace ReportDebtCreators.enginer
         {
 
         }
-
-        //Анализатор имён директорий, 
-        public static DateTime? PackageNameAnalisator(string packName)
-        {
-            DateTime? result = null;
-            try
-            {
-                result = DateTime.Parse(packName);
-            }
-            catch (Exception)
-            {
-                
-                //throw;
-            }
-            
-
-            return result;
-        }
-
-
-
 
         //Примитивный анализатор (соответствия файлов из пакета с шаблоном)
         //Анализатор имён пакетов

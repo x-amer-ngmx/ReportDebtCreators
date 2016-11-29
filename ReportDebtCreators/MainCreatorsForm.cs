@@ -82,11 +82,9 @@ namespace ReportDebtCreators
         {
             var select = (StructExelModel)PackFromList.SelectedItem;
 
-            var d = ExelCreator.PackageNameAnalisator(select.Name);
-
-            var m = fromPack.Max(x => x.DateIndex);
-
-            var result = fromPack.GetRangePack(d, m);
+            var result = fromPack.GetRangePack(
+                select.Name.PacNameConvert(),
+                fromPack.Max(x => x.DateIndex));
 
             var cou = result.Sum(exelModel => ExelCreator.ListPackageFiles(exelModel.AbsolutPatch).Count);
 
@@ -135,24 +133,34 @@ namespace ReportDebtCreators
 
         private void GenirateRepotr_Click(object sender, EventArgs e)
         {
-            var select = (StructExelModel)PackFromList.SelectedItem;
+            List<PackageFilesModel> pak = null;
+            var x = (StructExelModel)TemplateLasts.SelectedItem;
+            var obj = new ExelEnginer(x.AbsolutPatch, this);
 
-            var d = ExelCreator.PackageNameAnalisator(select.Name);
+            if (ChPack.Checked)
+            {
+                var selectm = (StructExelModel)PackageLasts.SelectedItem;
 
-            var selectm = (StructExelModel)PackToList.SelectedItem;
+                pak = fromPack.GetPack(selectm.Name.PacNameConvert()).GetEngineFList();
+            }
 
-            var m = ExelCreator.PackageNameAnalisator(selectm.Name);
+            if (ChRangPack.Checked)
+            {
+                var f = (StructExelModel) PackFromList.SelectedItem;
+                var t = (StructExelModel) PackToList.SelectedItem;
 
-            var obj = new ExelEnginer();
-            var pacck = obj.GetEngineFList(fromPack.GetRangePack(d, m));
+                pak = fromPack.GetRangePack(
+                    f.Name.PacNameConvert(),
+                    t.Name.PacNameConvert()
+                ).GetEngineFList();
+            }
 
-
-
+            obj.CreateReport(pak);
         }
 
-        public void SetInfoLable(string info)
+        public void SetInfoLable(string inf)
         {
-            label5.Text = info;
+            info.Text = inf;
         }
 
         /*

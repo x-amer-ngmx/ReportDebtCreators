@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -107,12 +108,8 @@ namespace ReportDebtCreators.enginer
                 // Проверка пакета файлов на совместимость шаблону
 
                 Kernel.OpenFile(_tmpl);
-                var listB = Kernel.GetListBrange("");
-
-                var enti = EntityPackadeFile(packList, listB);
-
-                if(!enti) return;
-
+                var listB = Kernel.GetListBrange("Лист1");
+                var res = packList.EntityPackadgeFileName(listB, _form);
 
 
                 //Механизм формирования отчёта для администратора
@@ -125,7 +122,7 @@ namespace ReportDebtCreators.enginer
             {
                 throw;
             }
-
+            Kernel.Quit();
             Kernel = null;
         }
 
@@ -136,87 +133,34 @@ namespace ReportDebtCreators.enginer
             try
             {
                 Kernel.OpenFile(_tmpl);
-                var listB = Kernel.GetListBrange("");
+                var listB = Kernel.GetListBrange("Лист1");
 
-                var enti = EntityPackadeFile(packList, listB);
+                //Механизм идентификации целостности наименований файлов пакета данных.
+                var res = packList.EntityPackadgeFileName(listB,_form);
 
-                if (!enti) return;
+                //Выделить содержимое шаблона и удалить
+                // переместить подвал к заголовку, оставить 1у строку
+                // И заполнить содержимое шаблона из пакета
+                // сохранить как книгу и не сохранять изменений в шаблоне
 
 
+
+
+
+                //Механизм обработки файлов пакета.
+
+                var mmv = res;
                 //Создание отчёта на основании последнего пакета данных(относительно текущей даты)
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                //throw;
             }
-
+            Kernel.Quit();
             Kernel = null;
         }
 
 
-        /// <summary>
-        /// Получаем список файлов в пакете или диапазоне пакетов
-        /// для формирования отчётов
-        /// в формате :
-        /// /пакет
-        /// /--файл1
-        /// /--файл2
-        /// /-- ...
-        /// /--файлN
-        /// 
-        /// полученные данные будут в последствии обработанны
-        /// на определение полноты пакета.
-        /// </summary>
-        /// <returns></returns>
-        public List<PackageFilesModel> GetEngineFList(IList<StructExelModel> packRange)
-        {
-            if (packRange == null || !packRange.Any()) return null;
-
-            var result = new List<PackageFilesModel>();
-            result.AddRange(
-                from pack in packRange
-                let file = new DirectoryInfo(pack.AbsolutPatch).GetFilesByExtensions(".xlsx", ".xls")
-                select new PackageFilesModel
-                {
-                    pack = pack,
-                    BrangeFiles = (from t in file select new StructExelModel { Name = t.Name.Split('.')[0], AbsolutPatch = t.FullName }).ToList()
-                });
-
-            return result;
-        }
-
-
-        private bool EntityPackadeFile(List<PackageFilesModel> packList, List<string> listB)
-        {
-            foreach (var reswin in
-            from pack in packList
-            let cbn = pack.BrangeFiles.Count
-            let mxx = pack.BrangeFiles.Sum(brn => (
-            from br in listB
-            let reg = new Regex($".*{br}.*", RegexOptions.IgnoreCase)
-            select reg.IsMatch(brn.Name) ? 1 : 0).Sum())
-            where mxx < cbn || mxx > cbn
-            select MessageBox.Show($"{(cbn - mxx)}", "", MessageBoxButtons.YesNo, MessageBoxIcon.Information))
-            {
-                if (reswin == DialogResult.Yes)
-                {
-                    var m = MainCreatorsForm.ActiveForm;
-                    
-                    //Вывод предупреждения о том что пакет был не полон или
-                    // некоторые файлы были именованны не корректно.
-                    // 
-
-                _form.SetInfoLable("Всё плохо но мы продолжаем!");
-                }
-                else
-                {
-                    _form.SetInfoLable("Всё плохо и мы останавливаемся!");
-                    //Выход из метода и вывод предупреждения.
-
-                }
-            }
-            return false;
-        }
 
 
     }

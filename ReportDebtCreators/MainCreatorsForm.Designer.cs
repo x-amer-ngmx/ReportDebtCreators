@@ -51,6 +51,7 @@
             this.panelPack = new System.Windows.Forms.Panel();
             this.GenirateRepotr = new System.Windows.Forms.Button();
             this.CloseApp = new System.Windows.Forms.Button();
+            this.info = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.structExelModelBindingSource)).BeginInit();
             this.MethodGroup.SuspendLayout();
             this.panelRangePack.SuspendLayout();
@@ -295,11 +296,19 @@
             this.CloseApp.UseVisualStyleBackColor = true;
             this.CloseApp.Click += new System.EventHandler(this.CloseApp_Click);
             // 
+            // info
+            // 
+            this.info.AutoSize = true;
+            this.info.Location = new System.Drawing.Point(73, 213);
+            this.info.Name = "info";
+            this.info.Size = new System.Drawing.Size(0, 13);
+            this.info.TabIndex = 11;
+            // 
             // MainCreatorsForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(595, 281);
+            this.Controls.Add(this.info);
             this.Controls.Add(this.CloseApp);
             this.Controls.Add(this.GenirateRepotr);
             this.Controls.Add(this.panel2);
@@ -307,7 +316,9 @@
             this.Controls.Add(this.CreatePack);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.TemplateLasts);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Icon = global::ReportDebtCreators.Properties.Resources.favicon;
+            this.MaximizeBox = false;
             this.Name = "MainCreatorsForm";
             this.Text = "Формирование отчётов по должникам.";
             this.TopMost = true;
@@ -348,6 +359,7 @@
         private System.Windows.Forms.Label CountPackFile;
         private System.Windows.Forms.Panel panelPack;
         private System.Windows.Forms.BindingSource structExelModelBindingSource;
+        private System.Windows.Forms.Label info;
     }
 }
 

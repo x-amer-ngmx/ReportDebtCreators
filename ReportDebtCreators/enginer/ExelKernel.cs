@@ -56,7 +56,7 @@ namespace ReportDebtCreators.enginer
             var res = GetMaxMinWorcRange(sh);
             var arr = sh.Range[res];
 
-            var result = (from Range x in arr.Cells select (string)x.Value).ToList();
+            var result = (from Range x in arr.Cells where x.Value != null select (string)x.Value).ToList();
 
             return result;
         }
@@ -87,8 +87,8 @@ namespace ReportDebtCreators.enginer
         private Worksheet GetSheets(string shName)
         {
             _wSheets = (Worksheet)_wBoock.Sheets.Item[shName];
-            _wSheets.Protect(Program.Pws);
-            //_wSheets.Unprotect(Program.Pws);
+            //_wSheets.Protect(Program.Pws);
+            _wSheets.Unprotect(Program.Pws);
             return _wSheets;
         }
 
