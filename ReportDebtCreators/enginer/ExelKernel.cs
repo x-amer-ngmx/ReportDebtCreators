@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Office.Interop.Excel;
 
@@ -152,8 +153,101 @@ namespace ReportDebtCreators.enginer
 
         }
 
-        private void SortTemplateTableInfo(Worksheet ws)
+        public void CreateFilseFromFill(List<string> param)
         {
+            GetSheets("26.10.2016");
+            foreach (var p in param)
+            {
+                SortTemplateTableInfo(_wSheets, p);
+            }
+            
+        }
+
+        private void SortTemplateTableInfo(Worksheet ws, string param)
+        {
+            var rangeList = (Range)ws.UsedRange;
+
+            
+            rangeList.AutoFilter(23, param);
+
+            var rrrnx = rangeList.SpecialCells(XlCellType.xlCellTypeVisible);
+/*
+            var wxc = (Worksheet)_wBoock.Worksheets.Add();
+            var ran = wxc.Range["A1"];
+            rrrnx.Copy(ran);
+
+
+            _wBoock.SaveAs($"{Program.DirCompil} из шаблона {param}.xlsx", XlFileFormat.xlWorkbookDefault, Type.Missing, Type.Missing,
+            false, false, XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing,
+            Type.Missing, Type.Missing);*/
+
+            //rrrnx.Copy(Missing.Value);
+
+
+
+            var newWBoock = (_Workbook)_exApp.Workbooks.Add();
+            var newWsheets = (_Worksheet)newWBoock.ActiveSheet;
+
+            var nran = newWsheets.Range["A1"];
+
+            rrrnx.Copy(nran);
+
+            /*
+            newWsheets.UsedRange.PasteSpecial(XlPasteType.xlPasteAllExceptBorders,
+                XlPasteSpecialOperation.xlPasteSpecialOperationAdd, false, false);
+                */
+
+            var f_name =
+                $"{Program.DirCompil}Перечень проблемных потребителей на {DateTime.Now:dd.MM.yyyy} {param}.xlsx";
+
+            newWBoock.SaveAs(f_name, XlFileFormat.xlWorkbookDefault, Type.Missing, Type.Missing,
+            false, false, XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing,
+            Type.Missing, Type.Missing);
+
+            newWBoock.Close(true, Missing.Value,Missing.Value);
+
+            Marshal.ReleaseComObject(newWsheets);
+            Marshal.ReleaseComObject(newWBoock);
+
+           
+
+            //var xxx = rrrnx.Count/rrrnx.Columns.Count;
+
+            //var rs = rangeList.Rows;
+            //rs.Range["9:126"].Select();
+            //var itis = rs.Count;
+
+            //var rw = ws.Rows;
+            //var newWBoock = (_Workbook)_exApp.Workbooks.Add();
+            //var newWsheets = (_Worksheet)newWBoock.Worksheets.Add();
+            //var nrange = (Range)newWsheets.get_Range("A6","X156");
+
+            //var r0c = rangeList.Rows.Count;
+
+            //var rx = rangeList.get_Range("A6", "X156");
+
+
+            
+            /*rx.Activate();*/
+            //rx.Copy(nrange);
+
+            //var r1c = rx.Rows.Count;
+            //var r2c = nrange.Rows.Count;
+
+            /*nrange.PasteSpecial(XlPasteType.xlPasteAll, XlPasteSpecialOperation.xlPasteSpecialOperationNone, false,
+                false);*/
+
+            //newWBoock.SaveAs($"{Program.DirResRep}Перечень проблемных потребителей na {DateTime.Now:dd.MM.YYYY} {param}.xlsx",XlFileFormat.xlWorkbookNormal, Missing.Value, Missing.Value, Missing.Value, Missing.Value, XlSaveAsAccessMode.xlExclusive, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value);
+
+            //newWBoock.Close();
+                //Marshal.ReleaseComObject(newWBoock);
+
+
+            //
+
+
+
+
             //Сортировка данных из Шаблона
         }
 
@@ -238,7 +332,7 @@ namespace ReportDebtCreators.enginer
             if (colNum <= 26)
                 return ((char)(colNum + 64)).ToString();
 
-            colNum--; //decrement to put value on zero based index
+            colNum--;
             return ColNum2Letter(colNum / 26) + ColNum2Letter((colNum % 26) + 1);
         }
 

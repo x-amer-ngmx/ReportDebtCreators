@@ -56,7 +56,8 @@ namespace ReportDebtCreators.enginer
             try
             {
                 Kernel.OpenFile(_tmpl);
-                var names = Kernel.GetSheetsName();
+                var listB = Kernel.GetListBrange("Лист1");
+                Kernel.CreateFilseFromFill(listB);
 
                 // var branch = Kernel.GetListBrange(names[1]);
 
@@ -110,6 +111,8 @@ namespace ReportDebtCreators.enginer
                 Kernel.OpenFile(_tmpl);
                 var listB = Kernel.GetListBrange("Лист1");
                 var res = packList.EntityPackadgeFileName(listB, _form);
+
+
 
 
                 //Механизм формирования отчёта для администратора
