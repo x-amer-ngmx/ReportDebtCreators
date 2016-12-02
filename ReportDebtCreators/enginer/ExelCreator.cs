@@ -60,7 +60,7 @@ namespace ReportDebtCreators.enginer
 
             try
             {
-                var files = new DirectoryInfo(patch).GetFilesByExtensions(".xlsx", ".xls");
+                var files = new DirectoryInfo(patch).GetFilesByExtensions(@".xlsx", ".xls");
                 result = (from t in files select new StructExelModel { Name = t.Name.Split('.')[0], AbsolutPatch = t.FullName }).ToList();
 
             }

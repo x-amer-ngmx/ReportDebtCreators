@@ -125,9 +125,11 @@ namespace ReportDebtCreators
 
         private void CreatePack_Click(object sender, EventArgs e)
         {
+            info.Text = "Формирование пакета для филиалов.";
             var x = (StructExelModel)TemplateLasts.SelectedItem;
             var exl = new ExelEnginer(x.AbsolutPatch, this);
             exl.CreatePackFile("");
+            info.Text = "";
         }
 
 

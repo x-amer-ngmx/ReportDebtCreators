@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using ReportDebtCreators.enginer;
 using ReportDebtCreators.Properties;
@@ -19,6 +20,10 @@ namespace ReportDebtCreators
         public static string Pws { private set; get; }
         public static string RootPatch { private set; get; }
 
+        public static int[] cellRange { private set; get; }
+
+
+
 
         /// <summary>
         /// Главная точка входа для приложения.
@@ -31,7 +36,12 @@ namespace ReportDebtCreators
 
             RootPatch = ConfigurationManager.AppSettings["rootPachExel"];
             Pws = ConfigurationManager.AppSettings["rootPachExel"];
+            var _cellR = ConfigurationManager.AppSettings["rangeCell"];
 
+            _cellR = string.IsNullOrEmpty(_cellR) ? "2,3,5,7,8,9,10,14,22,27,28,29,30" : _cellR;
+
+
+            cellRange = (from x in _cellR.Split(',') select int.Parse(x)).ToArray();
             if (string.IsNullOrEmpty(RootPatch)) RunApp();
             else DetectRunApp(true);
         }

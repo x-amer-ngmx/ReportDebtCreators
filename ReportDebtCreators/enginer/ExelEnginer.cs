@@ -56,22 +56,18 @@ namespace ReportDebtCreators.enginer
             try
             {
                 Kernel.OpenFile(_tmpl);
-                var listB = Kernel.GetListBrange("Лист1");
+                var listB = Kernel.GetListBrange("sys");
+
                 Kernel.CreateFilseFromFill(listB);
 
-                // var branch = Kernel.GetListBrange(names[1]);
-
-                //var reee = branch;
-
-                //Kernel.Quit(fname: $@"{ConfigurationManager.AppSettings["rootPachExel"]}\xui.xlsx");
-                Kernel.Quit();
             }
             catch (Exception ex)
             {
                 var mssg = ex.Message;
-                Kernel.Quit();
                 //throw;
             }
+
+            Kernel.Quit();
 
             Kernel = null;
         }
@@ -109,10 +105,10 @@ namespace ReportDebtCreators.enginer
                 // Проверка пакета файлов на совместимость шаблону
 
                 Kernel.OpenFile(_tmpl);
-                var listB = Kernel.GetListBrange("Лист1");
+                var listB = Kernel.GetListBrange("sys");
                 var res = packList.EntityPackadgeFileName(listB, _form);
 
-
+                if (res != null) Kernel.EngPackFiles(res);
 
 
                 //Механизм формирования отчёта для администратора
@@ -121,11 +117,13 @@ namespace ReportDebtCreators.enginer
                 // Формирование логики создания новой книги на основании последней существующей и конечного периода
                 // 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 throw;
             }
+
             Kernel.Quit();
+
             Kernel = null;
         }
 
@@ -136,10 +134,13 @@ namespace ReportDebtCreators.enginer
             try
             {
                 Kernel.OpenFile(_tmpl);
-                var listB = Kernel.GetListBrange("Лист1");
+                var listB = Kernel.GetListBrange("sys");
 
                 //Механизм идентификации целостности наименований файлов пакета данных.
                 var res = packList.EntityPackadgeFileName(listB,_form);
+
+                if (res != null) Kernel.EngPackFiles(res);
+
 
                 //Выделить содержимое шаблона и удалить
                 // переместить подвал к заголовку, оставить 1у строку
@@ -159,7 +160,10 @@ namespace ReportDebtCreators.enginer
             {
                 //throw;
             }
+
+
             Kernel.Quit();
+
             Kernel = null;
         }
 

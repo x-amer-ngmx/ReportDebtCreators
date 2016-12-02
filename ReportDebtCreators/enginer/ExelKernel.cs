@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Office.Interop.Excel;
+using ReportDebtCreators.model;
 
 namespace ReportDebtCreators.enginer
 {
@@ -15,9 +16,10 @@ namespace ReportDebtCreators.enginer
     {
         private Application _exApp;
         private Workbook _wBoock;
-        private Workbooks _wBoocks;
         private Worksheet _wSheets;
         private Sheets _sheets;
+
+        private string _fillPacDir;
 
         public ExelKernel()
         {
@@ -42,9 +44,9 @@ namespace ReportDebtCreators.enginer
 
         public void OpenFile(string patch)
         {
-           _wBoocks = _exApp.Workbooks;
-           _wBoock = _wBoocks.Open(patch);
+           _wBoock = _exApp.Workbooks.Open(patch);
         }
+
 
         public List<string> GetSheetsName()
         {
@@ -54,11 +56,9 @@ namespace ReportDebtCreators.enginer
         public List<string> GetListBrange(string name)
         {
             var sh = GetSheets(name);
-            var res = GetMaxMinWorcRange(sh);
-            var arr = sh.Range[res];
-
-            var result = (from Range x in arr.Cells where x.Value != null select (string)x.Value).ToList();
-
+            var ur = sh.UsedRange;
+            var arr = (Range)ur.Rows[$"2:{ur.Rows.Count}"];
+            var result = (from Range x in arr where x.Value != null select (string)x.Value).ToList();
             return result;
         }
 
@@ -72,7 +72,6 @@ namespace ReportDebtCreators.enginer
 
             Marshal.ReleaseComObject(_exApp);
             if(_wBoock != null) Marshal.ReleaseComObject(_wBoock);
-            if(_wBoocks != null) Marshal.ReleaseComObject(_wBoocks);
             if(_wSheets != null) Marshal.ReleaseComObject(_wSheets);
             if(_sheets != null) Marshal.ReleaseComObject(_sheets);
 
@@ -85,11 +84,17 @@ namespace ReportDebtCreators.enginer
 
         #region Привытные методы
 
-        private Worksheet GetSheets(string shName)
+        /// <summary>
+        /// Метод возвращает последний лист или лист по имени
+        /// </summary>
+        /// <param name="shName">если наименование листа не заданно то метод вернёт последний</param>
+        /// <returns></returns>
+        private Worksheet GetSheets(string shName = null)
         {
-            _wSheets = (Worksheet)_wBoock.Sheets.Item[shName];
+            //получаем последний лист вкниге (это очень важно)
+            _wSheets = string.IsNullOrEmpty(shName) ? (Worksheet)_wBoock.Sheets[_wBoock.Sheets.Count] : (Worksheet) _wBoock.Sheets.Item[shName];
             //_wSheets.Protect(Program.Pws);
-            _wSheets.Unprotect(Program.Pws);
+            _wSheets.Unprotect(Program.Pws); //снимаем защиту.
             return _wSheets;
         }
 
@@ -125,6 +130,59 @@ namespace ReportDebtCreators.enginer
         }
         */
 
+        private _Workbook OpenPackFile(string patch)
+        {
+            return _exApp.Workbooks.Open(patch);
+        }
+
+        public void EngPackFiles(List<PackageFilesModel> packages)
+        {
+            foreach (var pack in packages)
+            {
+                foreach (var pm in pack.BrangeFiles)
+                {
+                   var wB = OpenPackFile(pm.AbsolutPatch);
+                    var wS = (_Worksheet)wB.ActiveSheet;
+
+                    //выделяем диапазон необходимых данных
+                    //стольбец лицевых и заполняемых значений 
+                    // (далее по лицевым будем заполнять шаблон)
+                    //далее по логике построения отчёта
+                    //вставляем в шаблон
+                    //Сохраняем отчёт
+
+                    //Исключить шапку и подвал документа
+                    var usR = wS.UsedRange;
+                    var rc = usR.Rows.Count;
+
+                    var addres = GetAddrRange(6, rc, Program.cellRange);
+
+                    Range res;
+                    try
+                    {
+                        var x = (_Worksheet)_wBoock.Worksheets.Add();
+                        var r = x.Range["A1"];
+                        res = _exApp.mRange(wS,addres);
+                        res.Copy(r);
+                        
+                    }
+                    catch(Exception ex)
+                    {
+                        var mss = ex.Message;
+                    }
+
+                    //var rWS = wS.Range["E6:E126,G:G,H:H,I:I,J:J,N:N,V:V,X:X"];
+
+                    wB.Close(false, Missing.Value, Missing.Value);
+
+                    Marshal.ReleaseComObject(wS);
+                    Marshal.ReleaseComObject(wB);
+                }
+                
+            }
+
+            _exApp.Visible = true;
+        }
 
         private void CreatePackage()
         {
@@ -155,7 +213,10 @@ namespace ReportDebtCreators.enginer
 
         public void CreateFilseFromFill(List<string> param)
         {
-            GetSheets("26.10.2016");
+            _fillPacDir = $"{Program.DirCompil}Для филиалов за {DateTime.Now:dd.MM.yyyy}";
+            if (!Directory.Exists(_fillPacDir)) Directory.CreateDirectory(_fillPacDir);
+
+            GetSheets();
             foreach (var p in param)
             {
                 SortTemplateTableInfo(_wSheets, p);
@@ -170,35 +231,18 @@ namespace ReportDebtCreators.enginer
             
             rangeList.AutoFilter(23, param);
 
-            var rrrnx = rangeList.SpecialCells(XlCellType.xlCellTypeVisible);
-/*
-            var wxc = (Worksheet)_wBoock.Worksheets.Add();
-            var ran = wxc.Range["A1"];
-            rrrnx.Copy(ran);
-
-
-            _wBoock.SaveAs($"{Program.DirCompil} из шаблона {param}.xlsx", XlFileFormat.xlWorkbookDefault, Type.Missing, Type.Missing,
-            false, false, XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing,
-            Type.Missing, Type.Missing);*/
-
-            //rrrnx.Copy(Missing.Value);
-
-
+            var filtered = rangeList.SpecialCells(XlCellType.xlCellTypeVisible);
 
             var newWBoock = (_Workbook)_exApp.Workbooks.Add();
             var newWsheets = (_Worksheet)newWBoock.ActiveSheet;
 
             var nran = newWsheets.Range["A1"];
 
-            rrrnx.Copy(nran);
+            filtered.Copy(nran);
 
-            /*
-            newWsheets.UsedRange.PasteSpecial(XlPasteType.xlPasteAllExceptBorders,
-                XlPasteSpecialOperation.xlPasteSpecialOperationAdd, false, false);
-                */
 
             var f_name =
-                $"{Program.DirCompil}Перечень проблемных потребителей на {DateTime.Now:dd.MM.yyyy} {param}.xlsx";
+                $"{_fillPacDir}\\Перечень проблемных потребителей на {DateTime.Now:dd.MM.yyyy} {param}.xlsx";
 
             newWBoock.SaveAs(f_name, XlFileFormat.xlWorkbookDefault, Type.Missing, Type.Missing,
             false, false, XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing,
@@ -208,47 +252,6 @@ namespace ReportDebtCreators.enginer
 
             Marshal.ReleaseComObject(newWsheets);
             Marshal.ReleaseComObject(newWBoock);
-
-           
-
-            //var xxx = rrrnx.Count/rrrnx.Columns.Count;
-
-            //var rs = rangeList.Rows;
-            //rs.Range["9:126"].Select();
-            //var itis = rs.Count;
-
-            //var rw = ws.Rows;
-            //var newWBoock = (_Workbook)_exApp.Workbooks.Add();
-            //var newWsheets = (_Worksheet)newWBoock.Worksheets.Add();
-            //var nrange = (Range)newWsheets.get_Range("A6","X156");
-
-            //var r0c = rangeList.Rows.Count;
-
-            //var rx = rangeList.get_Range("A6", "X156");
-
-
-            
-            /*rx.Activate();*/
-            //rx.Copy(nrange);
-
-            //var r1c = rx.Rows.Count;
-            //var r2c = nrange.Rows.Count;
-
-            /*nrange.PasteSpecial(XlPasteType.xlPasteAll, XlPasteSpecialOperation.xlPasteSpecialOperationNone, false,
-                false);*/
-
-            //newWBoock.SaveAs($"{Program.DirResRep}Перечень проблемных потребителей na {DateTime.Now:dd.MM.YYYY} {param}.xlsx",XlFileFormat.xlWorkbookNormal, Missing.Value, Missing.Value, Missing.Value, Missing.Value, XlSaveAsAccessMode.xlExclusive, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value);
-
-            //newWBoock.Close();
-                //Marshal.ReleaseComObject(newWBoock);
-
-
-            //
-
-
-
-
-            //Сортировка данных из Шаблона
         }
 
         private void CreateWorksheet(ref Workbook wb, Worksheet ws)
@@ -262,98 +265,56 @@ namespace ReportDebtCreators.enginer
             //return (Worksheet) wb.Worksheets[DateTime.Now.ToString("dd.MM.yyyy")];
         }
 
-
-
-        private string GetMaxMinWorcRange(_Worksheet xSheet)
+        private string GetAddrRange(int rowBegin, int rowEnd, int[] cellIndexRange)
         {
-            var result = string.Empty;
-            try
+            var address = string.Empty;
+            foreach (var i in cellIndexRange)
             {
-                var rowMax = 0;
-                var colMax = 0;
-
-                var usedRange = xSheet.UsedRange;
-                var lastCell = usedRange.SpecialCells(XlCellType.xlCellTypeLastCell, Type.Missing);
-                var lastRow = lastCell.Row;
-                var lastCol = lastCell.Column;
-                var rowMin = lastRow + 1;
-                var colMin = lastCol + 1;
-
-                var row = xSheet.UsedRange.Rows.Count;
-                var cel = xSheet.UsedRange.Columns.Count;
-
-                for (var i = 1; i <= row; i++)
-                {
-                    for (var j = 1; j <= cel; j++)
-                    {
-                        var vall = (Range)xSheet.Cells[i, j];
-
-                        if (vall != null && vall.Value != null && !string.IsNullOrEmpty(vall.Value.ToString()))
-                        {
-                            if (vall.Row > rowMax)
-                                rowMax = vall.Row;
-
-                            if (vall.Column > colMax)
-                                colMax = vall.Column;
-
-                            if (vall.Row < rowMin)
-                                rowMin = vall.Row+1;
-
-                            if (vall.Column < colMin)
-                                colMin = vall.Column;
-                        }
-                        MRCO(vall);
-                    }
-                }
-
-
-                if (!(rowMax == 0 || colMax == 0 || rowMin == lastRow + 1 || colMin == lastCol + 1))
-                    result = Cells2Address(rowMin, colMin, rowMax, colMax);
-
-                MRCO(lastCell);
-                MRCO(usedRange);
+                var cN = GetColName(i);
+                address += $"{cN}{rowBegin}:{cN}{rowEnd}{(i!= cellIndexRange[cellIndexRange.Count() - 1] ? ",":string.Empty)}";
 
             }
-            catch (Exception ex)
-            {
-                //throw;
-            }
+            // A1:A99,D1:D99 ...
 
-            return result;
+            return address;
         }
 
-        private string Cells2Address(int row1, int col1, int row2, int col2)
+        private string GetColName(int index)
         {
-            return $"{ColNum2Letter(col1)}{row1}:{ColNum2Letter(col2)}{row2}";
-        }
-
-        private string ColNum2Letter(int colNum)
-        {
-            if (colNum <= 26)
-                return ((char)(colNum + 64)).ToString();
-
-            colNum--;
-            return ColNum2Letter(colNum / 26) + ColNum2Letter((colNum % 26) + 1);
-        }
-
-        private void MRCO(object obj)
-        {
-            if (obj == null) { return; }
-            try
+            var range = "";
+            index -= 1;
+            if (index < 1) return range;
+            for (var i = 1; index + i > 0; i = 0)
             {
-                Marshal.ReleaseComObject(obj);
+                range = $"{((char)(65 + index % 26))}{range}";
+                index /= 26;
             }
-            catch
-            {
-                // ignore, cf: http://support.microsoft.com/default.aspx/kb/317109
-            }
-            finally
-            {
-                obj = null;
-            }
+            if (range.Length > 1) range = $"{((char)((int)range[0] - 1))}{range.Substring(1)}";
+            return range;
         }
 
         #endregion
 
+    }
+
+
+    static class Custommer
+    {
+        public static Range mRange(this Application app, _Worksheet ws, string addr)
+        {
+            var address = addr.Split(',');
+            return address.Select(s => ws.Range[s]).Aggregate<Range, Range>(null, (current, r) => app.Unionx(current, r));
+        }
+
+        public static Range Unionx(this Application app, Range r0, Range r1)
+        {
+            if (r0 == null && r1 == null)
+                return null;
+            if (r0 == null)
+                return r1;
+            if (r1 == null)
+                return r0;
+            return app.Union(r0, r1);
+        }
     }
 }

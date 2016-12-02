@@ -79,7 +79,7 @@ namespace ReportDebtCreators.enginer
                 foreach (var pkb in pk.BrangeFiles)
                 {
                     var id =
-                        listB.Select(brx => new Regex($".*{brx}.*", RegexOptions.IgnoreCase))
+                        listB.Select(brx => new Regex($@"^([^\$\~]).*{brx}.*", RegexOptions.IgnoreCase))
                             .Count(reg => reg.IsMatch(pkb.Name));
                     cpkb += id;
 
@@ -111,13 +111,14 @@ namespace ReportDebtCreators.enginer
                     {
                         pk.BrangeFiles.Remove(xx);
                     }
-
-                    if (pk.BrangeFiles.Any())
-                    {
-                        rrs = rrs ?? new List<PackageFilesModel>();
-                        rrs.Add(pk);
-                    }
                 }
+
+                if (pk.BrangeFiles.Any())
+                {
+                    rrs = rrs ?? new List<PackageFilesModel>();
+                    rrs.Add(pk);
+                }
+                
                 //^
             }
 
