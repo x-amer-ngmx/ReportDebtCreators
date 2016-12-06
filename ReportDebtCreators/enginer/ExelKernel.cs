@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Office.Interop.Excel;
 using ReportDebtCreators.model;
+using DataTable = System.Data.DataTable;
 
 namespace ReportDebtCreators.enginer
 {
@@ -91,7 +92,14 @@ namespace ReportDebtCreators.enginer
         /// <returns></returns>
         private Worksheet GetSheets(string shName = null)
         {
-            //получаем последний лист вкниге (это очень важно)
+            /*
+            var x_wBoock = _wBoock;
+            var sh = (Worksheet) x_wBoock.Sheets[_wBoock.Sheets.Count];
+            var rng = (Range) sh.Range["A8:AG156"];
+            rng.ClearContents();
+            x_wBoock.SaveAs(@"D:\popup.xlsx");*/
+
+            //получаем последний лист из книги (это очень важно)
             _wSheets = string.IsNullOrEmpty(shName) ? (Worksheet)_wBoock.Sheets[_wBoock.Sheets.Count] : (Worksheet) _wBoock.Sheets.Item[shName];
             //_wSheets.Protect(Program.Pws);
             _wSheets.Unprotect(Program.Pws); //снимаем защиту.
@@ -137,11 +145,17 @@ namespace ReportDebtCreators.enginer
 
         public void EngPackFiles(List<PackageFilesModel> packages)
         {
+            //сводный лист по всему выбираемому диапазону
+            var final = (Worksheet)_wBoock.Worksheets.Add();
+            var ro = 1;
+            
             foreach (var pack in packages)
             {
                 foreach (var pm in pack.BrangeFiles)
                 {
-                   var wB = OpenPackFile(pm.AbsolutPatch);
+                    var finalR = final.Range[$"A{ro}"];
+
+                    var wB = OpenPackFile(pm.AbsolutPatch);
                     var wS = (_Worksheet)wB.ActiveSheet;
 
                     //выделяем диапазон необходимых данных
@@ -157,14 +171,34 @@ namespace ReportDebtCreators.enginer
 
                     var addres = GetAddrRange(6, rc, Program.cellRange);
 
-                    Range res;
+                    
                     try
                     {
-                        var x = (_Worksheet)_wBoock.Worksheets.Add();
+
+                        //создаём временный лист
+                        var x = (Worksheet)_wBoock.Worksheets.Add();
                         var r = x.Range["A1"];
-                        res = _exApp.mRange(wS,addres);
+                        //получаем данные из вычисляемых столбцов
+                        var res = _exApp.mRange(wS, addres);
+                        //помещаем в него результаты по всем вычесляемым столбцам
                         res.Copy(r);
                         
+                        //удаляем заголовки
+                        x.RemoveFirstRow();
+
+                        //определяем область копирования
+                        var m = x.UsedRange;
+
+                        //расчитываем следующую позицию для вставки блока данных
+                        ro += m.Rows.Count;
+
+                        //вставляем данные в накопительный лист
+                        m.Copy(finalR);
+
+                        //удаляем промежуточный временный лист
+                        _exApp.DisplayAlerts = false;
+                        x.Delete();
+                        _exApp.DisplayAlerts = true;
                     }
                     catch(Exception ex)
                     {
@@ -180,8 +214,18 @@ namespace ReportDebtCreators.enginer
                 }
                 
             }
+/*
+            var x = (_Worksheet)_wBoock.Worksheets.Add();
+            
+            foreach (var re in res)
+            {
+               var r = x.Range[$"A{(re.Rows.Count+1)}"];
+                re.Copy(r);
+            }*/
+            
 
-            _exApp.Visible = true;
+
+ _exApp.Visible = true;
         }
 
         private void CreatePackage()
@@ -303,7 +347,7 @@ namespace ReportDebtCreators.enginer
         public static Range mRange(this Application app, _Worksheet ws, string addr)
         {
             var address = addr.Split(',');
-            return address.Select(s => ws.Range[s]).Aggregate<Range, Range>(null, (current, r) => app.Unionx(current, r));
+            return address.Select(s => ws.Range[s]).Aggregate<Range, Range>(null, app.Unionx);
         }
 
         public static Range Unionx(this Application app, Range r0, Range r1)
@@ -315,6 +359,40 @@ namespace ReportDebtCreators.enginer
             if (r1 == null)
                 return r0;
             return app.Union(r0, r1);
+        }
+
+        public static void RemoveFirstRow(this Worksheet workSheet, int n =1)
+        {
+            var range = workSheet.Range["A1", "A" + n];
+            var row = range.EntireRow;
+            row.Delete(XlDirection.xlUp);
+        }
+
+        public static DataTable GetDataTable(this Range rn)
+        {
+            var tbl = new DataTable ();
+
+            var cc = rn.Columns.Count;
+            var rc = rn.Rows.Count;
+
+            for (var i = 0; i < cc; i++)
+            {
+                 var x = (object)rn.Cells[1, i + 1].Value2;
+                tbl.Columns.Add(x.ToString(),typeof(string));
+            }
+
+            for (var i = 0; i < cc; i++)
+            {
+                
+                for (var j = 0; j < rc; j++)
+                {
+                   
+
+                }
+                
+            }
+
+            return tbl;
         }
     }
 }

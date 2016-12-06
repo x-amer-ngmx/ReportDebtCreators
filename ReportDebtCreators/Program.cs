@@ -40,8 +40,16 @@ namespace ReportDebtCreators
 
             _cellR = string.IsNullOrEmpty(_cellR) ? "2,3,5,7,8,9,10,14,22,27,28,29,30" : _cellR;
 
+            try
+            {
+                cellRange = (from x in _cellR.Split(',') select int.Parse(x)).ToArray();
+            }
+            catch (Exception)
+            {
+                cellRange = new[] {2, 3, 5, 7, 8, 9, 10, 14, 22, 27, 28, 29, 30};
+            }
 
-            cellRange = (from x in _cellR.Split(',') select int.Parse(x)).ToArray();
+            
             if (string.IsNullOrEmpty(RootPatch)) RunApp();
             else DetectRunApp(true);
         }

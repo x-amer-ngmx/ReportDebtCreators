@@ -158,6 +158,7 @@ namespace ReportDebtCreators.enginer
             }
             catch (Exception ex)
             {
+                var ms = ex.Message;
                 //throw;
             }
 

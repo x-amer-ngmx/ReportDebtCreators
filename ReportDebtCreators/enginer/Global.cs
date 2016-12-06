@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -170,5 +171,7 @@ namespace ReportDebtCreators.enginer
 
             return result;
         }
-    }
+
+        //Переводим Range в DataTable, для последующей обработки данных
+  }
 }
