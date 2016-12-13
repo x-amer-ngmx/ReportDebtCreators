@@ -157,7 +157,7 @@ namespace ReportDebtCreators
                 ).GetEngineFList();
             }
 
-            obj.CreateReport(pak);
+            obj.CreateReport(pak, ChReportAdmin.Checked);
         }
 
         public void SetInfoLable(string inf)

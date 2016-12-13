@@ -24,7 +24,7 @@ namespace ReportDebtCreators.enginer
         {
             return (from p in fromPack
              orderby p.DateIndex descending
-             where (p.DateIndex > f && p.DateIndex <= t)
+             where (p.DateIndex >= f && p.DateIndex <= t)
              select p).ToList();
         }
 
@@ -73,7 +73,8 @@ namespace ReportDebtCreators.enginer
             var bout = false;
             List<StructExelModel> rnfr = new List<StructExelModel>();
             List<PackageFilesModel> rrs = null;
-            foreach (var pk in packList)
+
+           foreach (var pk in packList)
             {
 
                 var cpkb = 0;

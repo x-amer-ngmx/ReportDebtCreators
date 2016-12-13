@@ -4,8 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Authentication.ExtendedProtection;
+using System.Windows.Forms;
 using Microsoft.Office.Interop.Excel;
 using ReportDebtCreators.model;
+using Application = Microsoft.Office.Interop.Excel.Application;
 using DataTable = System.Data.DataTable;
 
 namespace ReportDebtCreators.enginer
@@ -90,7 +93,7 @@ namespace ReportDebtCreators.enginer
         /// </summary>
         /// <param name="shName">если наименование листа не заданно то метод вернёт последний</param>
         /// <returns></returns>
-        private Worksheet GetSheets(string shName = null)
+        private Worksheet GetSheets(string shName = null, string newName = null)
         {
             /*
             var x_wBoock = _wBoock;
@@ -99,8 +102,11 @@ namespace ReportDebtCreators.enginer
             rng.ClearContents();
             x_wBoock.SaveAs(@"D:\popup.xlsx");*/
 
+            if (!string.IsNullOrEmpty(newName)) _wBoock.Sheets[_wBoock.Sheets.Count].Name = newName;
+
             //получаем последний лист из книги (это очень важно)
             _wSheets = string.IsNullOrEmpty(shName) ? (Worksheet)_wBoock.Sheets[_wBoock.Sheets.Count] : (Worksheet) _wBoock.Sheets.Item[shName];
+            
             //_wSheets.Protect(Program.Pws);
             _wSheets.Unprotect(Program.Pws); //снимаем защиту.
             return _wSheets;
@@ -140,22 +146,27 @@ namespace ReportDebtCreators.enginer
 
         private _Workbook OpenPackFile(string patch)
         {
-            return _exApp.Workbooks.Open(patch);
+            return _exApp.Workbooks.Open(patch,CorruptLoad:XlCorruptLoad.xlExtractData);
         }
+
 
         public void EngPackFiles(List<PackageFilesModel> packages)
         {
-            //сводный лист по всему выбираемому диапазону
-            var final = (Worksheet)_wBoock.Worksheets.Add();
-            var ro = 1;
             
             foreach (var pack in packages)
             {
+                //сводный лист по всему выбираемому диапазону
+                var final = (Worksheet)_wBoock.Worksheets.Add();
+
+                final.Name =$"Data_{pack.pack.Name}";
+                var ro = 1;
+                
                 foreach (var pm in pack.BrangeFiles)
                 {
                     var finalR = final.Range[$"A{ro}"];
-
+                    
                     var wB = OpenPackFile(pm.AbsolutPatch);
+                    
                     var wS = (_Worksheet)wB.ActiveSheet;
 
                     //выделяем диапазон необходимых данных
@@ -172,40 +183,19 @@ namespace ReportDebtCreators.enginer
                     var addres = GetAddrRange(6, rc, Program.cellRange);
 
                     
+                    
                     try
                     {
+                        var res =  _exApp.mRange(wS, addres);
+                        ro += res.Rows.Count;
+                        res.Copy(finalR);
 
-                        //создаём временный лист
-                        var x = (Worksheet)_wBoock.Worksheets.Add();
-                        var r = x.Range["A1"];
-                        //получаем данные из вычисляемых столбцов
-                        var res = _exApp.mRange(wS, addres);
-                        //помещаем в него результаты по всем вычесляемым столбцам
-                        res.Copy(r);
-                        
-                        //удаляем заголовки
-                        x.RemoveFirstRow();
-
-                        //определяем область копирования
-                        var m = x.UsedRange;
-
-                        //расчитываем следующую позицию для вставки блока данных
-                        ro += m.Rows.Count;
-
-                        //вставляем данные в накопительный лист
-                        m.Copy(finalR);
-
-                        //удаляем промежуточный временный лист
-                        _exApp.DisplayAlerts = false;
-                        x.Delete();
-                        _exApp.DisplayAlerts = true;
                     }
                     catch(Exception ex)
                     {
                         var mss = ex.Message;
+                        MessageBox.Show(mss);
                     }
-
-                    //var rWS = wS.Range["E6:E126,G:G,H:H,I:I,J:J,N:N,V:V,X:X"];
 
                     wB.Close(false, Missing.Value, Missing.Value);
 
@@ -214,26 +204,97 @@ namespace ReportDebtCreators.enginer
                 }
                 
             }
-/*
-            var x = (_Worksheet)_wBoock.Worksheets.Add();
-            
-            foreach (var re in res)
-            {
-               var r = x.Range[$"A{(re.Rows.Count+1)}"];
-                re.Copy(r);
-            }*/
-            
+            //_exApp.Visible = true;
 
-
- _exApp.Visible = true;
         }
 
-        private void CreatePackage()
+        public void CreateReport(List<PackageFilesModel> packages)
         {
             //Получение из Шаблона списка Филиалов
             //Создание книг по филиалам
             //Создание листов и вставка отсортированный по филлиалу из шаблона данных
             //Сохранение книги
+
+            GetSheets();
+            //var tocopy = _wSheets;
+
+
+            var one_out = false;
+            foreach (var pkg in packages)
+            {
+
+                if (!one_out)
+                {
+                    one_out = true;
+                    _wSheets.Name = pkg.pack.Name;
+                }
+                else
+                {
+                    _wSheets.Copy(After: _wSheets);
+                    //_wBoock.Sheets[$"{tocopy.Name}(2)"].Name = "x";
+                    GetSheets(newName: pkg.pack.Name);
+                    
+                }
+                
+                var shTmp = (Worksheet) _wBoock.Sheets.Item[$"Data_{pkg.pack.Name}"];
+
+                var tcr = shTmp.UsedRange.Rows.Count;
+
+
+                var cr = _wSheets.UsedRange.Rows.Count;
+
+                for (var r = 7; r <= cr; r++)
+                {
+                    //получаем параметры поиска, по 2ум столбцам...
+                    var param1 = _wSheets.Cells[r, Program.cellRange[0]].Value?.ToString();
+                    var param2 = _wSheets.Cells[r, Program.cellRange[1]].Value?.ToString();
+
+                    if ((param1 == null || param2 == null) ||
+                        (string.IsNullOrEmpty(param1) || string.IsNullOrEmpty(param2))) continue;
+
+                    if (param1.Equals("840795"))
+                    {
+                        var x = "stoped";
+                        var mx = x;
+                    }
+
+                    Range getRow = null;
+
+                    for (var i = 1; i < tcr; i++)
+                    {
+                        var tp1 = shTmp.Cells[i, 1].Value?.ToString();
+                        var tp2 = shTmp.Cells[i, 2].Value?.ToString();
+
+                        if ((tp1 != null && tp2 != null) && (param1.Equals(tp1) && param2.Equals(tp2)))
+                        {
+                            getRow = shTmp.UsedRange.Rows[i];
+                            break;
+                        }
+                    }
+
+
+                    //fill template
+
+                    if (getRow == null) continue;
+
+                    var cid = Program.cellRange.Length;
+
+                    for (var c = 0; c < cid; c++)
+                    {
+                        var ci = Program.cellRange[c];
+                        if (ci == Program.cellRange[0] && ci == Program.cellRange[1]) continue;
+                        var v1 = getRow.Cells[1, c + 1].Value;
+                        _wSheets.Cells[r, ci].Value = v1;
+
+                    }
+                }
+                _exApp.DisplayAlerts = false;
+                shTmp.Delete();
+                _exApp.DisplayAlerts = true;
+
+            }
+            _exApp.Visible = true;
+
         }
 
         private void CreateRootReport()
@@ -263,30 +324,60 @@ namespace ReportDebtCreators.enginer
             GetSheets();
             foreach (var p in param)
             {
-                SortTemplateTableInfo(_wSheets, p);
+                SortTemplateTableInfo(p);
             }
             
         }
 
-        private void SortTemplateTableInfo(Worksheet ws, string param)
+        private void SortTemplateTableInfo(string param)
         {
-            var rangeList = (Range)ws.UsedRange;
+            var newWBoock = _exApp.Workbooks.Add(1);
+
+            //var newWsheets = (Worksheet)newWBoock.ActiveSheet;
+
+
+            _wSheets.Copy(newWBoock.Worksheets[1]);
+
+            var ix = newWBoock.Worksheets.Count;
+            var sh = (Worksheet) newWBoock.Worksheets[ix];
+
+            sh.Delete();
+
+            var newWsh = (Worksheet)newWBoock.ActiveSheet;
+            
+            var valid = newWsh.Range["W:W"];
+            valid.Validation.Delete();
+
+            var uses = newWsh.UsedRange;
+            var uss = uses.Range[$"A7:A{uses.Rows.Count}"];
+
+            uss.AutoFilter(23, $"<>{param}");
+            uss.Delete(XlDeleteShiftDirection.xlShiftUp);
+
+            if (newWsh.AutoFilter != null) newWsh.AutoFilterMode = false;
 
             
-            rangeList.AutoFilter(23, param);
-
-            var filtered = rangeList.SpecialCells(XlCellType.xlCellTypeVisible);
-
-            var newWBoock = (_Workbook)_exApp.Workbooks.Add();
-            var newWsheets = (_Worksheet)newWBoock.ActiveSheet;
-
-            var nran = newWsheets.Range["A1"];
-
-            filtered.Copy(nran);
-
+            newWsh.Protect(Password: Program.Pws,
+                    DrawingObjects: _wSheets.ProtectDrawingObjects,
+                    Contents:_wSheets.ProtectContents,
+                    Scenarios: _wSheets.ProtectScenarios,
+                    UserInterfaceOnly:_wSheets.ProtectionMode,
+                    AllowFormattingCells:_wSheets.Protection.AllowFormattingCells,
+                    AllowFormattingColumns: _wSheets.Protection.AllowFormattingColumns,
+                    AllowFormattingRows: _wSheets.Protection.AllowFormattingRows,
+                    AllowInsertingColumns: _wSheets.Protection.AllowInsertingColumns,
+                    AllowInsertingRows: _wSheets.Protection.AllowInsertingRows,
+                    AllowInsertingHyperlinks: _wSheets.Protection.AllowInsertingHyperlinks,
+                    AllowDeletingColumns: _wSheets.Protection.AllowDeletingColumns,
+                    AllowDeletingRows: _wSheets.Protection.AllowDeletingRows,
+                    AllowSorting: _wSheets.Protection.AllowSorting,
+                    AllowFiltering: _wSheets.Protection.AllowFiltering,
+                    AllowUsingPivotTables: _wSheets.Protection.AllowUsingPivotTables);
 
             var f_name =
                 $"{_fillPacDir}\\Перечень проблемных потребителей на {DateTime.Now:dd.MM.yyyy} {param}.xlsx";
+            
+            //newWBoock.Protect(Program.Pws);
 
             newWBoock.SaveAs(f_name, XlFileFormat.xlWorkbookDefault, Type.Missing, Type.Missing,
             false, false, XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing,
@@ -294,7 +385,7 @@ namespace ReportDebtCreators.enginer
 
             newWBoock.Close(true, Missing.Value,Missing.Value);
 
-            Marshal.ReleaseComObject(newWsheets);
+            //Marshal.ReleaseComObject(newWsh);
             Marshal.ReleaseComObject(newWBoock);
         }
 
@@ -361,9 +452,15 @@ namespace ReportDebtCreators.enginer
             return app.Union(r0, r1);
         }
 
-        public static void RemoveFirstRow(this Worksheet workSheet, int n =1)
+        public static void RemoveFirstRow(this Worksheet workSheet, int x=1,int n =1)
         {
-            var range = workSheet.Range["A1", "A" + n];
+            var range = workSheet.Range[$"A{x}", $"A{n}"];
+            var row = range.EntireRow;
+            row.Delete(XlDirection.xlDown);
+        }
+        public static void RangeRemoveFirstRow(this Range rng, int n = 1)
+        {
+            var range = rng.Range["A1", "A" + n];
             var row = range.EntireRow;
             row.Delete(XlDirection.xlUp);
         }

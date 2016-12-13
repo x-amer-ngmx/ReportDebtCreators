@@ -64,6 +64,7 @@ namespace ReportDebtCreators.enginer
             catch (Exception ex)
             {
                 var mssg = ex.Message;
+                MessageBox.Show(mssg);
                 //throw;
             }
 
@@ -79,11 +80,11 @@ namespace ReportDebtCreators.enginer
         /// спрашиваем пользователя окрыть ли все повреждённые файлы или просто остановить процесс.
         /// если всё впорядке то формируем отчёт.
         /// </summary>
-        public void CreateReport(List<PackageFilesModel> packList, bool isRoot=false)
+        public void CreateReport(List<PackageFilesModel> packList, bool isAdmin=false)
         {
-            if (isRoot)
+            if (isAdmin)
             {
-                ReportRoot(packList);
+                ReportAdmin(packList);
                 return;
             }
 
@@ -96,7 +97,7 @@ namespace ReportDebtCreators.enginer
         /// где книга отчёта ведётся на протяженни 30-31 го дня с даты создания первого листа но не позднее 1го числа
         /// следующего месяца.
         /// </summary>
-        private void ReportRoot(List<PackageFilesModel> packList)
+        private void ReportAdmin(List<PackageFilesModel> packList)
         {
             Kernel = new ExelKernel();
 
@@ -108,7 +109,13 @@ namespace ReportDebtCreators.enginer
                 var listB = Kernel.GetListBrange("sys");
                 var res = packList.EntityPackadgeFileName(listB, _form);
 
-                if (res != null) Kernel.EngPackFiles(res);
+                if (res != null)
+                {
+                    Kernel.EngPackFiles(res);
+                    var lst = res.OrderBy(i => i.pack.DateIndex).ToList();
+                    Kernel.CreateReport(lst);
+                    
+                }
 
 
                 //Механизм формирования отчёта для администратора
@@ -122,9 +129,9 @@ namespace ReportDebtCreators.enginer
                 throw;
             }
 
-            Kernel.Quit();
+            //Kernel.Quit();
 
-            Kernel = null;
+            //Kernel = null;
         }
 
         private void ReportForBusines(List<PackageFilesModel> packList)
@@ -139,7 +146,11 @@ namespace ReportDebtCreators.enginer
                 //Механизм идентификации целостности наименований файлов пакета данных.
                 var res = packList.EntityPackadgeFileName(listB,_form);
 
-                if (res != null) Kernel.EngPackFiles(res);
+                if (res != null)
+                {
+                    Kernel.EngPackFiles(res);
+                    Kernel.CreateReport(res);
+                }
 
 
                 //Выделить содержимое шаблона и удалить
@@ -158,7 +169,9 @@ namespace ReportDebtCreators.enginer
             }
             catch (Exception ex)
             {
+
                 var ms = ex.Message;
+                MessageBox.Show(ms);
                 //throw;
             }
 
