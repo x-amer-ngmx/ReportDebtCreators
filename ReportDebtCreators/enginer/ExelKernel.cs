@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Data.OleDb;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -156,15 +158,43 @@ namespace ReportDebtCreators.enginer
             foreach (var pack in packages)
             {
                 //сводный лист по всему выбираемому диапазону
-                var final = (Worksheet)_wBoock.Worksheets.Add();
+               /* var final = (Worksheet)_wBoock.Worksheets.Add();
 
                 final.Name =$"Data_{pack.pack.Name}";
-                var ro = 1;
+                var ro = 1;*/
                 
                 foreach (var pm in pack.BrangeFiles)
                 {
-                    var finalR = final.Range[$"A{ro}"];
-                    
+                    // var finalR = final.Range[$"A{ro}"];
+
+
+                    using (var conn = new OleDbConnection($@"
+                        Provider=Microsoft.ACE.OLEDB.12.0;
+                        Data Source={pm.AbsolutPatch};
+                        Extended Properties=""Excel 12.0 Xml;HDR=YES"))
+                    {
+                        conn.Open();
+                        var cmd = conn.CreateCommand();
+                        cmd.CommandText = $"SELECT * FROM []";
+
+                        using (var rdr = cmd.ExecuteReader())
+                        {
+                            var query = (from DbDataRecord row in rdr select row).Select(x =>
+                            {
+                                Dictionary<string,object> item = new Dictionary<string, object>();
+
+                                foreach (var i in Program.cellRange)
+                                {
+                                    item.Add(rdr.GetName(i),x[i]);
+                                }
+                                return item;
+                            });
+
+                            var json = JsonConvert
+                        }
+                    }
+
+
                     var wB = OpenPackFile(pm.AbsolutPatch);
                     
                     var wS = (_Worksheet)wB.ActiveSheet;
@@ -182,8 +212,10 @@ namespace ReportDebtCreators.enginer
 
                     var addres = GetAddrRange(6, rc, Program.cellRange);
 
+
+
                     
-                    
+                   /* 
                     try
                     {
                         var res =  _exApp.mRange(wS, addres);
@@ -195,7 +227,7 @@ namespace ReportDebtCreators.enginer
                     {
                         var mss = ex.Message;
                         MessageBox.Show(mss);
-                    }
+                    }*/
 
                     wB.Close(false, Missing.Value, Missing.Value);
 
