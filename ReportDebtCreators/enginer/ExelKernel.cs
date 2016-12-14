@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
 using System.Windows.Forms;
 using Microsoft.Office.Interop.Excel;
+using Newtonsoft.Json;
 using ReportDebtCreators.model;
 using Application = Microsoft.Office.Interop.Excel.Application;
 using DataTable = System.Data.DataTable;
@@ -168,18 +169,17 @@ namespace ReportDebtCreators.enginer
                     // var finalR = final.Range[$"A{ro}"];
 
 
-                    using (var conn = new OleDbConnection($@"
-                        Provider=Microsoft.ACE.OLEDB.12.0;
-                        Data Source={pm.AbsolutPatch};
-                        Extended Properties=""Excel 12.0 Xml;HDR=YES"))
+                    using (var conn = new OleDbConnection($"Provider=Microsoft.ACE.OLEDB.12.0;Data Source='{pm.AbsolutPatch}';Extended Properties=\"Excel 12.0;HDR=YES;\";"))
                     {
                         conn.Open();
+                        var sh = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
+
                         var cmd = conn.CreateCommand();
-                        cmd.CommandText = $"SELECT * FROM []";
+                        cmd.CommandText = $"SELECT * FROM [{sh.Rows[0]["TABLE_NAME"]}] ";
 
                         using (var rdr = cmd.ExecuteReader())
                         {
-                            var query = (from DbDataRecord row in rdr select row).Select(x =>
+                            var query = (from DbDataRecord row in rdr where row[Program.cellRange[0]] !=null && row[Program.cellRange[1]] != null select row).Select(x =>
                             {
                                 Dictionary<string,object> item = new Dictionary<string, object>();
 
@@ -190,7 +190,8 @@ namespace ReportDebtCreators.enginer
                                 return item;
                             });
 
-                            var json = JsonConvert
+                            var json = JsonConvert.SerializeObject(query);
+
                         }
                     }
 
