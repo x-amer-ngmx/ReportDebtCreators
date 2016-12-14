@@ -349,17 +349,27 @@ namespace ReportDebtCreators.enginer
             valid.Validation.Delete();
 
             var uses = newWsh.UsedRange;
-            var uss = uses.Range[$"A7:A{uses.Rows.Count}"];
+            var rc = uses.Rows.Count;
+            var uss = uses.Range[$"A7:A{rc}"];
 
             uss.AutoFilter(23, $"<>{param}");
             uss.Delete(XlDeleteShiftDirection.xlShiftUp);
 
             if (newWsh.AutoFilter != null) newWsh.AutoFilterMode = false;
 
-            
+
+            var xuses = newWsh.UsedRange;
+            var xrc = xuses.Rows.Count+2;
+
+            var rng = xuses.Range[$"A{xrc}:A{xrc + 4}"];
+            var rrng = rng.EntireRow;
+            rrng.Locked = false;
+
+
+            newWsh.Range["E7"].Select();
             newWsh.Protect(Password: Program.Pws,
                     DrawingObjects: _wSheets.ProtectDrawingObjects,
-                    Contents:_wSheets.ProtectContents,
+                    Contents:true,
                     Scenarios: _wSheets.ProtectScenarios,
                     UserInterfaceOnly:_wSheets.ProtectionMode,
                     AllowFormattingCells:_wSheets.Protection.AllowFormattingCells,
@@ -371,21 +381,21 @@ namespace ReportDebtCreators.enginer
                     AllowDeletingColumns: _wSheets.Protection.AllowDeletingColumns,
                     AllowDeletingRows: _wSheets.Protection.AllowDeletingRows,
                     AllowSorting: _wSheets.Protection.AllowSorting,
-                    AllowFiltering: _wSheets.Protection.AllowFiltering,
+                    AllowFiltering: false,
                     AllowUsingPivotTables: _wSheets.Protection.AllowUsingPivotTables);
 
             var f_name =
                 $"{_fillPacDir}\\Перечень проблемных потребителей на {DateTime.Now:dd.MM.yyyy} {param}.xlsx";
             
             //newWBoock.Protect(Program.Pws);
-
+            //newWsh.SaveAs(f_name, Type.Missing, Program.Pws, Type.Missing, false,false);
             newWBoock.SaveAs(f_name, XlFileFormat.xlWorkbookDefault, Type.Missing, Type.Missing,
             false, false, XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing,
             Type.Missing, Type.Missing);
-
+            
             newWBoock.Close(true, Missing.Value,Missing.Value);
 
-            //Marshal.ReleaseComObject(newWsh);
+            Marshal.ReleaseComObject(newWsh);
             Marshal.ReleaseComObject(newWBoock);
         }
 
