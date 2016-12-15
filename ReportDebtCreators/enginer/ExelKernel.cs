@@ -155,7 +155,11 @@ namespace ReportDebtCreators.enginer
 
         public void EngPackFiles(List<PackageFilesModel> packages)
         {
-            Dictionary<string, object> ItemsPack = new Dictionary<string, object>();
+            var fileTemp = $"{Program.RootPatch}\\Temp_Data.json";
+
+            if (File.Exists(fileTemp)) File.Delete(fileTemp);
+
+            var ItemsPack = new Dictionary<string, object>();
             foreach (var pack in packages)
             {
 
@@ -165,7 +169,7 @@ namespace ReportDebtCreators.enginer
                 final.Name =$"Data_{pack.pack.Name}";
                 var ro = 1;*/
 
-                Dictionary<string, object> ListItemsRow= new Dictionary<string, object>();
+                var ListItemsRow= new Dictionary<string, object>();
                 foreach (var pm in pack.BrangeFiles)
                 {
                     // var finalR = final.Range[$"A{ro}"];
@@ -243,6 +247,8 @@ namespace ReportDebtCreators.enginer
 
             var json = JsonConvert.SerializeObject(ItemsPack);
             //_exApp.Visible = true;
+
+            File.WriteAllText(fileTemp,json);
 
         }
 
@@ -322,7 +328,10 @@ namespace ReportDebtCreators.enginer
                         var ci = Program.cellRange[c];
                         if (ci == Program.cellRange[0] && ci == Program.cellRange[1]) continue;
                         var v1 = getRow.Cells[1, c + 1].Value;
-                        _wSheets.Cells[r, ci].Value = v1;
+
+                        var frm = _wSheets.Cells[r, ci];
+                        var formul = ((Range) frm).Formula;
+                        frm.Value = v1;
 
                     }
                 }
