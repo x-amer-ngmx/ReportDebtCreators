@@ -155,15 +155,17 @@ namespace ReportDebtCreators.enginer
 
         public void EngPackFiles(List<PackageFilesModel> packages)
         {
-            
+            Dictionary<string, object> ItemsPack = new Dictionary<string, object>();
             foreach (var pack in packages)
             {
+
                 //сводный лист по всему выбираемому диапазону
                /* var final = (Worksheet)_wBoock.Worksheets.Add();
 
                 final.Name =$"Data_{pack.pack.Name}";
                 var ro = 1;*/
-                
+
+                Dictionary<string, object> ListItemsRow= new Dictionary<string, object>();
                 foreach (var pm in pack.BrangeFiles)
                 {
                     // var finalR = final.Range[$"A{ro}"];
@@ -179,23 +181,23 @@ namespace ReportDebtCreators.enginer
 
                         using (var rdr = cmd.ExecuteReader())
                         {
-                            var query = (from DbDataRecord row in rdr where row[Program.cellRange[0]] !=null && row[Program.cellRange[1]] != null select row).Select(x =>
-                            {
-                                Dictionary<string,object> item = new Dictionary<string, object>();
+                            var query =
+                                (from DbDataRecord row in rdr select row);
 
-                                foreach (var i in Program.cellRange)
-                                {
-                                    item.Add(rdr.GetName(i),x[i]);
-                                }
-                                return item;
-                            });
+                            var Litem = (from dbRw in query
+                                where
+                                    !string.IsNullOrEmpty(dbRw[Program.cellRange[0]].ToString()) &&
+                                    !string.IsNullOrEmpty(dbRw[Program.cellRange[1]].ToString())
+                                select Program.cellRange.ToDictionary(i => rdr.GetName(i), i => dbRw[i])).ToList();
 
-                            var json = JsonConvert.SerializeObject(query);
+                            var dic = new Dictionary<string,object>() {};
+                            
+                            ListItemsRow.Add(pm.Name,Litem);
 
                         }
                     }
 
-
+                    /*
                     var wB = OpenPackFile(pm.AbsolutPatch);
                     
                     var wS = (_Worksheet)wB.ActiveSheet;
@@ -228,15 +230,18 @@ namespace ReportDebtCreators.enginer
                     {
                         var mss = ex.Message;
                         MessageBox.Show(mss);
-                    }*/
+                    }*
 
                     wB.Close(false, Missing.Value, Missing.Value);
 
                     Marshal.ReleaseComObject(wS);
-                    Marshal.ReleaseComObject(wB);
+                    Marshal.ReleaseComObject(wB);*/
                 }
-                
+
+                ItemsPack.Add(pack.pack.Name, ListItemsRow);
             }
+
+            var json = JsonConvert.SerializeObject(ItemsPack);
             //_exApp.Visible = true;
 
         }
