@@ -476,8 +476,8 @@ namespace ReportDebtCreators.enginer
             sh.Delete();
 
             var newWsh = (Worksheet)newWBoock.ActiveSheet;
-            
-            var valid = newWsh.Range["W:W"];
+
+            var valid = newWsh.Range[$"{Program.brnCell}:{Program.brnCell}"];
             valid.Validation.Delete();
 
             var uses = newWsh.UsedRange;

@@ -24,6 +24,8 @@ namespace ReportDebtCreators
 
         public static string TempJsonDB { private set; get; }
 
+        public static string brnCell { private set; get; }
+
 
         /// <summary>
         /// Главная точка входа для приложения.
@@ -35,9 +37,13 @@ namespace ReportDebtCreators
             Application.SetCompatibleTextRenderingDefault(false);
 
             RootPatch = ConfigurationManager.AppSettings["rootPachExel"];
-            TempJsonDB = $"{RootPatch}\\Temp_Data.json";
             Pws = ConfigurationManager.AppSettings["passwordSheet"];
             var _cellR = ConfigurationManager.AppSettings["rangeCell"];
+            var _bcell = ConfigurationManager.AppSettings["brangeCell"];
+
+            TempJsonDB = $"{RootPatch}\\Temp_Data.json";
+
+            brnCell = string.IsNullOrEmpty(_bcell) ? "W" : _bcell;
 
             _cellR = string.IsNullOrEmpty(_cellR) ? "2,3,5,7,8,9,10,14,22,27,28,29,30" : _cellR;
 
