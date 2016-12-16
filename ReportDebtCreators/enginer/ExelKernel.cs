@@ -259,7 +259,6 @@ namespace ReportDebtCreators.enginer
             GetSheets();
             //var tocopy = _wSheets;
 
-
             var one_out = false;
 
 
@@ -303,130 +302,46 @@ namespace ReportDebtCreators.enginer
                     if ((param1 == null || param2 == null) ||
                         (string.IsNullOrEmpty(param1) || string.IsNullOrEmpty(param2))) continue;
 
+                    AddThesData(row, r, param1, param2);
 
-                    foreach (var _rowList in row)
-                    {
-                        foreach (var _row in _rowList)
-                        {
-                            var p1 = _row.Values.ElementAt(0) ?? "";
-                            var p2 = _row.Values.ElementAt(1) ?? "";
-
-                            if (p1.Equals(param1) && p2.Equals(param2))
-                            {
-
-                                foreach (var clr in Program.cellRange.Skip(2))
-                                {
-                                    var frm = _wSheets.Cells[r, clr];
-                                    var formul = ((Range)frm).Formula.ToString();
-
-                                    var reg = new Regex("^=.*", RegexOptions.IgnoreCase);
-
-                                    if (reg.IsMatch(formul))
-                                    {
-                                        continue;
-                                    }
-                                    var v1 = _row[$"F{clr}"];
-
-                                    frm.Value = v1;
-
-                                }
-                                var x = _row.Keys;
-                            }
-                        }
-                    }
                 }
             }
 
             _exApp.Visible = true;
-
-            //Получение из Шаблона списка Филиалов
-            //Создание книг по филиалам
-            //Создание листов и вставка отсортированный по филлиалу из шаблона данных
-            //Сохранение книги
-            return;
-            GetSheets();
-            //var tocopy = _wSheets;
+        }
 
 
-            /*var one_out = false;
-            foreach (var pkg in packages)
+        private void AddThesData(List<List<Dictionary<string, object>>> row, int r, string param1, string param2)
+        {
+            foreach (var _rowList in row)
             {
-
-                if (!one_out)
+                foreach (var _row in _rowList)
                 {
-                    one_out = true;
-                    _wSheets.Name = pkg.pack.Name;
-                }
-                else
-                {
-                    _wSheets.Copy(After: _wSheets);
-                    //_wBoock.Sheets[$"{tocopy.Name}(2)"].Name = "x";
-                    GetSheets(newName: pkg.pack.Name);
-                    
-                }
-                
-                var shTmp = (Worksheet) _wBoock.Sheets.Item[$"Data_{pkg.pack.Name}"];
+                    var p1 = (_row.Values.ElementAt(0) ?? "").ToString();
+                    var p2 = (_row.Values.ElementAt(1) ?? "").ToString();
 
-                var tcr = shTmp.UsedRange.Rows.Count;
-
-
-                var cr = _wSheets.UsedRange.Rows.Count;
-
-                for (var r = 7; r <= cr; r++)
-                {
-                    //получаем параметры поиска, по 2ум столбцам...
-                    var param1 = _wSheets.Cells[r, Program.cellRange[0]].Value?.ToString();
-                    var param2 = _wSheets.Cells[r, Program.cellRange[1]].Value?.ToString();
-
-                    if ((param1 == null || param2 == null) ||
-                        (string.IsNullOrEmpty(param1) || string.IsNullOrEmpty(param2))) continue;
-
-                    if (param1.Equals("840795"))
+                    if (p1.Equals(param1) && p2.Equals(param2))
                     {
-                        var x = "stoped";
-                        var mx = x;
-                    }
 
-                    Range getRow = null;
-
-                    for (var i = 1; i < tcr; i++)
-                    {
-                        var tp1 = shTmp.Cells[i, 1].Value?.ToString();
-                        var tp2 = shTmp.Cells[i, 2].Value?.ToString();
-
-                        if ((tp1 != null && tp2 != null) && (param1.Equals(tp1) && param2.Equals(tp2)))
+                        foreach (var clr in Program.cellRange.Skip(2))
                         {
-                            getRow = shTmp.UsedRange.Rows[i];
-                            break;
+                            var frm = _wSheets.Cells[r, clr];
+                            var formul = ((Range)frm).Formula.ToString();
+
+                            var reg = new Regex("^=.*", RegexOptions.IgnoreCase);
+
+                            if (reg.IsMatch(formul))
+                            {
+                                continue;
+                            }
+                            var v1 = _row[$"F{clr}"];
+                            frm.Value = v1;
                         }
-                    }
 
-
-                    //fill template
-
-                    if (getRow == null) continue;
-
-                    var cid = Program.cellRange.Length;
-
-                    for (var c = 0; c < cid; c++)
-                    {
-                        var ci = Program.cellRange[c];
-                        if (ci == Program.cellRange[0] && ci == Program.cellRange[1]) continue;
-                        var v1 = getRow.Cells[1, c + 1].Value;
-
-                        var frm = _wSheets.Cells[r, ci];
-                        var formul = ((Range) frm).Formula;
-                        frm.Value = v1;
-
+                        return;
                     }
                 }
-                _exApp.DisplayAlerts = false;
-                shTmp.Delete();
-                _exApp.DisplayAlerts = true;
-
             }
-            _exApp.Visible = true;
-            */
         }
 
         private void CreateRootReport()
@@ -484,7 +399,7 @@ namespace ReportDebtCreators.enginer
             var rc = uses.Rows.Count;
             var uss = uses.Range[$"A7:A{rc}"];
 
-            uss.AutoFilter(23, $"<>{param}");
+            uss.AutoFilter(Program.brnCell.ColumnNameToNumber(), $"<>{param}");
             uss.Delete(XlDeleteShiftDirection.xlShiftUp);
 
             if (newWsh.AutoFilter != null) newWsh.AutoFilterMode = false;
@@ -593,6 +508,28 @@ namespace ReportDebtCreators.enginer
                 return r0;
             return app.Union(r0, r1);
         }
+
+
+        public static int ColumnNameToNumber(this string col_name)
+        {
+            int result = 0;
+
+            // Process each letter.
+            for (int i = 0; i < col_name.Length; i++)
+            {
+                result *= 26;
+                char letter = col_name[i];
+
+                // See if it's out of bounds.
+                if (letter < 'A') letter = 'A';
+                if (letter > 'Z') letter = 'Z';
+
+                // Add in the value of this letter.
+                result += (int)letter - (int)'A' + 1;
+            }
+            return result;
+        }
+
 
         public static void RemoveFirstRow(this Worksheet workSheet, int x=1,int n =1)
         {

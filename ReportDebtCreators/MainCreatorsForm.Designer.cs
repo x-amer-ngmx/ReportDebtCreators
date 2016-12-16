@@ -321,7 +321,6 @@
             this.MaximizeBox = false;
             this.Name = "MainCreatorsForm";
             this.Text = "Формирование отчётов по должникам.";
-            this.TopMost = true;
             ((System.ComponentModel.ISupportInitialize)(this.structExelModelBindingSource)).EndInit();
             this.MethodGroup.ResumeLayout(false);
             this.MethodGroup.PerformLayout();
