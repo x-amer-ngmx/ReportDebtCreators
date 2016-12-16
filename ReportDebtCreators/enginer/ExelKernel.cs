@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Microsoft.Office.Interop.Excel;
 using Newtonsoft.Json;
@@ -187,11 +188,13 @@ namespace ReportDebtCreators.enginer
                             var query =
                                 (from DbDataRecord row in rdr select row);
 
+
+
                             var Litem = (from dbRw in query
                                 where
                                     !string.IsNullOrEmpty(dbRw[Program.cellRange[0]].ToString()) &&
                                     !string.IsNullOrEmpty(dbRw[Program.cellRange[1]].ToString())
-                                select Program.cellRange.ToDictionary(i => rdr.GetName(i-1), i => dbRw[i-1])).ToList();
+                                select Program.cellRange.ToDictionary(i => $"F{i}", i => dbRw[i-1])).ToList();
 
                             var dic = new Dictionary<string,object>() {};
                             
@@ -281,16 +284,14 @@ namespace ReportDebtCreators.enginer
                 var cr = _wSheets.UsedRange.Rows.Count;
 
                 var get_pak =
-                    (from x in data where x.Key.Equals(pack.pack.Name) select JsonConvert.DeserializeObject<Dictionary<string, object>>(x.Value.ToString())).Single();
+                    (from x in data
+                        where x.Key.Equals(pack.pack.Name)
+                        select JsonConvert.DeserializeObject<Dictionary<string, object>>(x.Value.ToString())).Single();
 
-                var row = new List<List<Dictionary<string, object>>>();
-                foreach (var brn in pack.BrangeFiles)
-                {
-
-                     row.Add( (from gg in get_pak
-                        where gg.Key.Equals(brn.Name)
-                        select JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(gg.Value.ToString())).Single());
-                }
+                var row = pack.BrangeFiles.Select(brn => (from gg in get_pak
+                    where gg.Key.Equals(brn.Name)
+                    select JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(gg.Value.ToString())).Single())
+                    .ToList();
 
 
                 for (var r = 7; r <= cr; r++)
@@ -303,9 +304,6 @@ namespace ReportDebtCreators.enginer
                         (string.IsNullOrEmpty(param1) || string.IsNullOrEmpty(param2))) continue;
 
 
-                    Range getRow = null;
-
-                    var i = 1;
                     foreach (var _rowList in row)
                     {
                         foreach (var _row in _rowList)
@@ -319,48 +317,28 @@ namespace ReportDebtCreators.enginer
                                 foreach (var clr in Program.cellRange.Skip(2))
                                 {
                                     var frm = _wSheets.Cells[r, clr];
-                                    var formul = ((Range)frm).Formula;
-                                    frm.Value = _row[$"F{clr}"];
+                                    var formul = ((Range)frm).Formula.ToString();
+
+                                    var reg = new Regex("^=.*", RegexOptions.IgnoreCase);
+
+                                    if (reg.IsMatch(formul))
+                                    {
+                                        continue;
+                                    }
+                                    var v1 = _row[$"F{clr}"];
+
+                                    frm.Value = v1;
 
                                 }
                                 var x = _row.Keys;
                             }
-                            i++;
                         }
                     }
-                    /*
-                    for (var i = 1; i < tcr; i++)
-                    {
-                        var tp1 = shTmp.Cells[i, 1].Value?.ToString();
-                        var tp2 = shTmp.Cells[i, 2].Value?.ToString();
-
-                        if ((tp1 != null && tp2 != null) && (param1.Equals(tp1) && param2.Equals(tp2)))
-                        {
-                            getRow = shTmp.UsedRange.Rows[i];
-                            break;
-                        }
-                    }
-
-
-                    //fill template
-
-                    if (getRow == null) continue;
-
-                    var cid = Program.cellRange.Length;
-
-                    for (var c = 0; c < cid; c++)
-                    {
-                        var ci = Program.cellRange[c];
-                        if (ci == Program.cellRange[0] && ci == Program.cellRange[1]) continue;
-                        var v1 = getRow.Cells[1, c + 1].Value;
-
-                        var frm = _wSheets.Cells[r, ci];
-                        var formul = ((Range)frm).Formula;
-                        frm.Value = v1;
-
-                    }*/
                 }
             }
+
+            _exApp.Visible = true;
+
             //Получение из Шаблона списка Филиалов
             //Создание книг по филиалам
             //Создание листов и вставка отсортированный по филлиалу из шаблона данных

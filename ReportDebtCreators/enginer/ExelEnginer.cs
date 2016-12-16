@@ -176,9 +176,9 @@ namespace ReportDebtCreators.enginer
             }
 
 
-            Kernel.Quit();
+            //Kernel.Quit();
 
-            Kernel = null;
+            //Kernel = null;
         }
 
 
