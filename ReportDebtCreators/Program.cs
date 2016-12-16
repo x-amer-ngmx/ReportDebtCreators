@@ -22,7 +22,7 @@ namespace ReportDebtCreators
 
         public static int[] cellRange { private set; get; }
 
-
+        public static string TempJsonDB { private set; get; }
 
 
         /// <summary>
@@ -35,6 +35,7 @@ namespace ReportDebtCreators
             Application.SetCompatibleTextRenderingDefault(false);
 
             RootPatch = ConfigurationManager.AppSettings["rootPachExel"];
+            TempJsonDB = $"{RootPatch}\\Temp_Data.json";
             Pws = ConfigurationManager.AppSettings["passwordSheet"];
             var _cellR = ConfigurationManager.AppSettings["rangeCell"];
 
