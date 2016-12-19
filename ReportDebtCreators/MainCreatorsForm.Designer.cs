@@ -52,11 +52,16 @@
             this.GenirateRepotr = new System.Windows.Forms.Button();
             this.CloseApp = new System.Windows.Forms.Button();
             this.info = new System.Windows.Forms.Label();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.structExelModelBindingSource)).BeginInit();
             this.MethodGroup.SuspendLayout();
             this.panelRangePack.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panelPack.SuspendLayout();
+            this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // TemplateLasts
@@ -128,11 +133,11 @@
             // 
             // CreatePack
             // 
-            this.CreatePack.Location = new System.Drawing.Point(372, 14);
+            this.CreatePack.Location = new System.Drawing.Point(166, 24);
             this.CreatePack.Name = "CreatePack";
             this.CreatePack.Size = new System.Drawing.Size(212, 23);
             this.CreatePack.TabIndex = 2;
-            this.CreatePack.Text = "Сформировать пакет по филлиалам";
+            this.CreatePack.Text = "Сформировать пакет по филиалам";
             this.CreatePack.UseVisualStyleBackColor = true;
             this.CreatePack.Click += new System.EventHandler(this.CreatePack_Click);
             // 
@@ -225,7 +230,7 @@
             this.MethodGroup.Controls.Add(this.label3);
             this.MethodGroup.Controls.Add(this.ChReportRoot);
             this.MethodGroup.Controls.Add(this.ChReportAdmin);
-            this.MethodGroup.Location = new System.Drawing.Point(12, 143);
+            this.MethodGroup.Location = new System.Drawing.Point(6, 111);
             this.MethodGroup.Name = "MethodGroup";
             this.MethodGroup.Size = new System.Drawing.Size(372, 57);
             this.MethodGroup.TabIndex = 8;
@@ -252,7 +257,7 @@
             this.panel2.Controls.Add(this.panelRangePack);
             this.panel2.Controls.Add(this.ChPack);
             this.panel2.Controls.Add(this.ChRangPack);
-            this.panel2.Location = new System.Drawing.Point(12, 51);
+            this.panel2.Location = new System.Drawing.Point(6, 19);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(562, 79);
             this.panel2.TabIndex = 3;
@@ -278,7 +283,7 @@
             // 
             // GenirateRepotr
             // 
-            this.GenirateRepotr.Location = new System.Drawing.Point(50, 241);
+            this.GenirateRepotr.Location = new System.Drawing.Point(41, 198);
             this.GenirateRepotr.Name = "GenirateRepotr";
             this.GenirateRepotr.Size = new System.Drawing.Size(188, 23);
             this.GenirateRepotr.TabIndex = 0;
@@ -288,7 +293,7 @@
             // 
             // CloseApp
             // 
-            this.CloseApp.Location = new System.Drawing.Point(352, 241);
+            this.CloseApp.Location = new System.Drawing.Point(343, 198);
             this.CloseApp.Name = "CloseApp";
             this.CloseApp.Size = new System.Drawing.Size(126, 23);
             this.CloseApp.TabIndex = 10;
@@ -299,21 +304,54 @@
             // info
             // 
             this.info.AutoSize = true;
-            this.info.Location = new System.Drawing.Point(73, 213);
+            this.info.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel, ((byte)(204)));
+            this.info.ForeColor = System.Drawing.Color.Red;
+            this.info.Location = new System.Drawing.Point(64, 170);
             this.info.Name = "info";
-            this.info.Size = new System.Drawing.Size(0, 13);
+            this.info.Size = new System.Drawing.Size(0, 17);
             this.info.TabIndex = 11;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.CreatePack);
+            this.groupBox1.Location = new System.Drawing.Point(15, 51);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(592, 66);
+            this.groupBox1.TabIndex = 12;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Формирование пакетов";
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.info);
+            this.groupBox2.Controls.Add(this.CloseApp);
+            this.groupBox2.Controls.Add(this.GenirateRepotr);
+            this.groupBox2.Controls.Add(this.panel2);
+            this.groupBox2.Controls.Add(this.MethodGroup);
+            this.groupBox2.Location = new System.Drawing.Point(15, 133);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(592, 243);
+            this.groupBox2.TabIndex = 13;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Формирование отчётов";
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(540, 7);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 14;
+            this.button1.Text = "Обновить";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // MainCreatorsForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(595, 281);
-            this.Controls.Add(this.info);
-            this.Controls.Add(this.CloseApp);
-            this.Controls.Add(this.GenirateRepotr);
-            this.Controls.Add(this.panel2);
-            this.Controls.Add(this.MethodGroup);
-            this.Controls.Add(this.CreatePack);
+            this.ClientSize = new System.Drawing.Size(621, 388);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.groupBox2);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.TemplateLasts);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
@@ -329,6 +367,9 @@
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
             this.panelPack.ResumeLayout(false);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -359,6 +400,9 @@
         private System.Windows.Forms.Panel panelPack;
         private System.Windows.Forms.BindingSource structExelModelBindingSource;
         private System.Windows.Forms.Label info;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Button button1;
     }
 }
 

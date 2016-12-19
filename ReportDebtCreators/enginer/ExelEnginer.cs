@@ -114,7 +114,6 @@ namespace ReportDebtCreators.enginer
                     Kernel.EngPackFiles(res);
                     var lst = res.OrderBy(i => i.pack.DateIndex).ToList();
                     Kernel.CreateReport(lst);
-                    
                 }
 
 
@@ -129,9 +128,8 @@ namespace ReportDebtCreators.enginer
                 throw;
             }
 
-            //Kernel.Quit();
-
-            //Kernel = null;
+            Kernel.Quit();
+            Kernel = null;
         }
 
         private void ReportForBusines(List<PackageFilesModel> packList)
@@ -176,9 +174,8 @@ namespace ReportDebtCreators.enginer
             }
 
 
-            //Kernel.Quit();
-
-            //Kernel = null;
+            Kernel.Quit();
+            Kernel = null;
         }
 
 

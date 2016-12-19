@@ -175,7 +175,7 @@ namespace ReportDebtCreators.enginer
                     // var finalR = final.Range[$"A{ro}"];
 
 
-                    using (var conn = new OleDbConnection($"Provider=Microsoft.ACE.OLEDB.12.0;Data Source='{pm.AbsolutPatch}';Extended Properties=\"Excel 12.0;HDR=YES;\";"))
+                    using (var conn = new OleDbConnection($"Provider=Microsoft.ACE.OLEDB.12.0;Data Source='{pm.AbsolutPatch}';Extended Properties=\"Excel 12.0;HDR=YES;IMEX=1\";"))
                     {
                         conn.Open();
                         var sh = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
@@ -194,7 +194,7 @@ namespace ReportDebtCreators.enginer
                                 where
                                     !string.IsNullOrEmpty(dbRw[Program.cellRange[0]].ToString()) &&
                                     !string.IsNullOrEmpty(dbRw[Program.cellRange[1]].ToString())
-                                select Program.cellRange.ToDictionary(i => $"F{i}", i => dbRw[i-1])).ToList();
+                                select Program.cellRange.ToDictionary(i => $"F{i}", i => dbRw.GetValue(i-1))).ToList();
 
                             var dic = new Dictionary<string,object>() {};
                             
@@ -305,9 +305,14 @@ namespace ReportDebtCreators.enginer
                     AddThesData(row, r, param1, param2);
 
                 }
+
+                _wSheets.Range["D4"].Select();
             }
 
-            _exApp.Visible = true;
+            var fileX = $"{Program.DirResRep}Отчёт на {DateTime.Now:dd.MM.yyyy hh_mm_ss}.xlsx";
+            _wBoock.SaveAs(fileX, XlFileFormat.xlWorkbookDefault, Type.Missing, Type.Missing,
+            false, false, XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing,
+            Type.Missing, Type.Missing);
         }
 
 
@@ -337,8 +342,6 @@ namespace ReportDebtCreators.enginer
                             var v1 = _row[$"F{clr}"];
                             frm.Value = v1;
                         }
-
-                        return;
                     }
                 }
             }
