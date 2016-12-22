@@ -19,7 +19,7 @@ namespace ReportDebtCreators.enginer
     /// </summary>
     class ExelKernel
     {
-        private Application _exApp;
+        private readonly Application _exApp;
         private Workbook _wBoock;
         private Worksheet _wSheets;
 
@@ -40,11 +40,6 @@ namespace ReportDebtCreators.enginer
 
 
         #region Публичные методы
-
-
-
-
-
 
         public void OpenFile(string patch)
         {

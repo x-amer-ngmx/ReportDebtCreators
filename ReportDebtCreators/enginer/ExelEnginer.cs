@@ -38,7 +38,7 @@ namespace ReportDebtCreators.enginer
         /// <summary>
         /// Открываем шаблон, сортируем данные по филлиалам, создаём файлы для заполнения филиалами
         /// </summary>
-        public void CreatePackFile(string pack)
+        public void CreatePackFile()
         {
             _kernel = new ExelKernel();
             try

@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using ReportDebtCreators.enginer;
 using ReportDebtCreators.model;
@@ -119,7 +115,7 @@ namespace ReportDebtCreators
             info.Text = "Формирование пакета для филиалов.";
             var x = (StructExelModel)TemplateLasts.SelectedItem;
             var exl = new ExelEnginer(x.AbsolutPatch, this);
-            exl.CreatePackFile("");
+            exl.CreatePackFile();
             info.Text = "";
         }
 
