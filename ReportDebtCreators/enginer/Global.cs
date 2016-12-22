@@ -16,7 +16,7 @@ namespace ReportDebtCreators.enginer
         {
             if (extensions == null)
                 throw new ArgumentNullException("extensions");
-            IEnumerable<FileInfo> files = dir.EnumerateFiles();
+            var files = dir.EnumerateFiles();
             return files.Where(f => extensions.Contains(f.Extension));
         }
 
@@ -70,8 +70,7 @@ namespace ReportDebtCreators.enginer
         public static List<PackageFilesModel> EntityPackadgeFileName(this List<PackageFilesModel> packList, List<string> listB, MainCreatorsForm form)
         {
             var cB = listB.Count;
-            var bout = false;
-            List<StructExelModel> rnfr = new List<StructExelModel>();
+            var rnfr = new List<StructExelModel>();
             List<PackageFilesModel> rrs = null;
 
            foreach (var pk in packList)
@@ -115,44 +114,13 @@ namespace ReportDebtCreators.enginer
                     }
                 }
 
-                if (pk.BrangeFiles.Any())
-                {
-                    rrs = rrs ?? new List<PackageFilesModel>();
-                    rrs.Add(pk);
-                }
-                
-                //^
+                if (!pk.BrangeFiles.Any()) continue;
+
+                rrs = rrs ?? new List<PackageFilesModel>();
+                rrs.Add(pk);
             }
 
             return rrs;
-            /*
-            foreach (var reswin in
-            from pack in packList
-                let cbn = listB.Count
-                let mxx = pack.BrangeFiles.Sum(brn => (
-                    from br in listB
-                        let reg = new Regex($".*{br}.*", RegexOptions.IgnoreCase)
-                        select reg.IsMatch(brn.Name) ? 1 : 0).Sum())
-                where mxx < cbn || mxx > cbn
-            select MessageBox.Show($"{(cbn - mxx)}", "", MessageBoxButtons.YesNo, MessageBoxIcon.Information))
-            {
-                if (reswin == DialogResult.Yes)
-                {
-                    //Вывод предупреждения о том что пакет был не полон или
-                    // некоторые файлы были именованны не корректно.
-                    // 
-                    result = true;
-                    _form.SetInfoLable("Всё плохо но мы продолжаем!");
-                }
-                else
-                {
-                    _form.SetInfoLable("Всё плохо и мы останавливаемся!");
-                    return result;
-                    //Выход из метода и вывод предупреждения.
-
-                }
-            }
-            */
         }
 
         //Анализатор имён директорий, 

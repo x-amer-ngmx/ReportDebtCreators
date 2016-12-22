@@ -1,15 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using ReportDebtCreators.model;
-using Execl = Microsoft.Office.Interop.Excel;
 
 namespace ReportDebtCreators.enginer
 {
@@ -22,14 +15,9 @@ namespace ReportDebtCreators.enginer
     /// </summary>
     public class ExelEnginer
     {
-
         private readonly string _tmpl;
-        private ExelKernel Kernel;
+        private ExelKernel _kernel;
         private readonly MainCreatorsForm _form;
-        public ExelEnginer()
-        {
-            
-        }
 
         public ExelEnginer(string template, MainCreatorsForm form)
         {
@@ -52,25 +40,21 @@ namespace ReportDebtCreators.enginer
         /// </summary>
         public void CreatePackFile(string pack)
         {
-            Kernel = new ExelKernel();
+            _kernel = new ExelKernel();
             try
             {
-                Kernel.OpenFile(_tmpl);
-                var listB = Kernel.GetListBrange("sys");
-
-                Kernel.CreateFilseFromFill(listB);
-
+                _kernel.OpenFile(_tmpl);
+                var listB = _kernel.GetListBrange("sys");
+                _kernel.CreateFilseFromFill(listB);
             }
             catch (Exception ex)
             {
                 var mssg = ex.Message;
                 MessageBox.Show(mssg);
-                //throw;
             }
 
-            Kernel.Quit();
-
-            Kernel = null;
+            _kernel.Quit();
+            _kernel = null;
         }
 
 
@@ -99,21 +83,21 @@ namespace ReportDebtCreators.enginer
         /// </summary>
         private void ReportAdmin(List<PackageFilesModel> packList)
         {
-            Kernel = new ExelKernel();
+            _kernel = new ExelKernel();
 
             try
             {
                 // Проверка пакета файлов на совместимость шаблону
 
-                Kernel.OpenFile(_tmpl);
-                var listB = Kernel.GetListBrange("sys");
+                _kernel.OpenFile(_tmpl);
+                var listB = _kernel.GetListBrange("sys");
                 var res = packList.EntityPackadgeFileName(listB, _form);
 
                 if (res != null)
                 {
-                    Kernel.EngPackFiles(res);
+                    _kernel.EngPackFiles(res);
                     var lst = res.OrderBy(i => i.pack.DateIndex).ToList();
-                    Kernel.CreateReport(lst);
+                    _kernel.CreateReport(lst);
                 }
 
 
@@ -125,29 +109,30 @@ namespace ReportDebtCreators.enginer
             }
             catch (Exception ex)
             {
-                throw;
+                var ms = ex.Message;
+                MessageBox.Show(ms);
             }
 
-            Kernel.Quit();
-            Kernel = null;
+            _kernel.Quit();
+            _kernel = null;
         }
 
         private void ReportForBusines(List<PackageFilesModel> packList)
         {
-            Kernel = new ExelKernel();
+            _kernel = new ExelKernel();
 
             try
             {
-                Kernel.OpenFile(_tmpl);
-                var listB = Kernel.GetListBrange("sys");
+                _kernel.OpenFile(_tmpl);
+                var listB = _kernel.GetListBrange("sys");
 
                 //Механизм идентификации целостности наименований файлов пакета данных.
                 var res = packList.EntityPackadgeFileName(listB,_form);
 
                 if (res != null)
                 {
-                    Kernel.EngPackFiles(res);
-                    Kernel.CreateReport(res);
+                    _kernel.EngPackFiles(res);
+                    _kernel.CreateReport(res);
                 }
 
 
@@ -155,31 +140,17 @@ namespace ReportDebtCreators.enginer
                 // переместить подвал к заголовку, оставить 1у строку
                 // И заполнить содержимое шаблона из пакета
                 // сохранить как книгу и не сохранять изменений в шаблоне
-
-
-
-
-
                 //Механизм обработки файлов пакета.
-
-                var mmv = res;
                 //Создание отчёта на основании последнего пакета данных(относительно текущей даты)
             }
             catch (Exception ex)
             {
-
                 var ms = ex.Message;
                 MessageBox.Show(ms);
-                //throw;
             }
 
-
-            Kernel.Quit();
-            Kernel = null;
+            _kernel.Quit();
+            _kernel = null;
         }
-
-
-
-
     }
 }

@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Forms;
 using ReportDebtCreators.model;
-
 
 namespace ReportDebtCreators.enginer
 {
@@ -24,9 +21,9 @@ namespace ReportDebtCreators.enginer
             }
             catch (Exception ex)
             {
-                // ignored
+                var ms = ex.Message;
+                MessageBox.Show(ms);
             }
-
 
             return result;
         }
@@ -48,7 +45,8 @@ namespace ReportDebtCreators.enginer
             }
             catch (Exception ex)
             {
-                // ignored
+                var ms = ex.Message;
+                MessageBox.Show(ms);
             }
 
             return result;
@@ -66,37 +64,11 @@ namespace ReportDebtCreators.enginer
             }
             catch (Exception ex)
             {
-                //throw;
+                var ms = ex.Message;
+                MessageBox.Show(ms);
             }
 
             return result;
-        }
-
-
-        //Создание пакета для всех филлиалов
-        public void CreatePackage(string patch)
-        {
-
-        }
-
-
-        //Формирование отчёта для руководства на основании пакета
-        public void RootCreateReport()
-        {
-        }
-
-
-        //Формирование отчёта для Администрация на основании пакета
-        public void AdminCreateReport()
-        {
-        }
-
-
-        //Анализатор Даты, по сути нужен при формирования отчётов для Администратора. 
-        //Регулирует содание либо нового файла, либо новой книге в старом.
-        private void DateAnalisator()
-        {
-
         }
 
         //Примитивный анализатор (соответствия файлов из пакета с шаблоном)

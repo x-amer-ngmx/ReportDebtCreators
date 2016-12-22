@@ -154,10 +154,8 @@ namespace ReportDebtCreators.enginer
         public void CreateReport(List<PackageFilesModel> packages)
         {
             GetSheets();
-            //var tocopy = _wSheets;
 
             var oneOut = false;
-
 
             var openFile = File.ReadAllText(Program.TempJsonDB);
             var data = JsonConvert.DeserializeObject<Dictionary<string,object>>(openFile);
@@ -222,23 +220,21 @@ namespace ReportDebtCreators.enginer
                     var p1 = (xRow.Values.ElementAt(0) ?? "").ToString();
                     var p2 = (xRow.Values.ElementAt(1) ?? "").ToString();
 
-                    if (p1.Equals(param1) && p2.Equals(param2))
+                    if (!p1.Equals(param1) || !p2.Equals(param2)) continue;
+
+                    foreach (var clr in Program.cellRange.Skip(2))
                     {
+                        var frm = _wSheets.Cells[r, clr];
+                        var formul = ((Range)frm).Formula.ToString();
 
-                        foreach (var clr in Program.cellRange.Skip(2))
+                        var reg = new Regex("^=.*", RegexOptions.IgnoreCase);
+
+                        if (reg.IsMatch(formul))
                         {
-                            var frm = _wSheets.Cells[r, clr];
-                            var formul = ((Range)frm).Formula.ToString();
-
-                            var reg = new Regex("^=.*", RegexOptions.IgnoreCase);
-
-                            if (reg.IsMatch(formul))
-                            {
-                                continue;
-                            }
-                            var v1 = xRow[$"F{clr}"];
-                            frm.Value = v1;
+                            continue;
                         }
+                        var v1 = xRow[$"F{clr}"];
+                        frm.Value = v1;
                     }
                 }
             }
