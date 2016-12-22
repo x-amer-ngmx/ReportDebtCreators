@@ -6,15 +6,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.Authentication.ExtendedProtection;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 using Microsoft.Office.Interop.Excel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using ReportDebtCreators.model;
 using Application = Microsoft.Office.Interop.Excel.Application;
-using DataTable = System.Data.DataTable;
 
 namespace ReportDebtCreators.enginer
 {
@@ -26,7 +22,6 @@ namespace ReportDebtCreators.enginer
         private Application _exApp;
         private Workbook _wBoock;
         private Worksheet _wSheets;
-        private Sheets _sheets;
 
         private string _fillPacDir;
 
@@ -82,7 +77,6 @@ namespace ReportDebtCreators.enginer
             Marshal.ReleaseComObject(_exApp);
             if(_wBoock != null) Marshal.ReleaseComObject(_wBoock);
             if(_wSheets != null) Marshal.ReleaseComObject(_wSheets);
-            if(_sheets != null) Marshal.ReleaseComObject(_sheets);
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -97,159 +91,62 @@ namespace ReportDebtCreators.enginer
         /// Метод возвращает последний лист или лист по имени
         /// </summary>
         /// <param name="shName">если наименование листа не заданно то метод вернёт последний</param>
+        /// <param name="newName"></param>
         /// <returns></returns>
         private Worksheet GetSheets(string shName = null, string newName = null)
         {
-            /*
-            var x_wBoock = _wBoock;
-            var sh = (Worksheet) x_wBoock.Sheets[_wBoock.Sheets.Count];
-            var rng = (Range) sh.Range["A8:AG156"];
-            rng.ClearContents();
-            x_wBoock.SaveAs(@"D:\popup.xlsx");*/
-
             if (!string.IsNullOrEmpty(newName)) _wBoock.Sheets[_wBoock.Sheets.Count].Name = newName;
 
             //получаем последний лист из книги (это очень важно)
             _wSheets = string.IsNullOrEmpty(shName) ? (Worksheet)_wBoock.Sheets[_wBoock.Sheets.Count] : (Worksheet) _wBoock.Sheets.Item[shName];
-            
-            //_wSheets.Protect(Program.Pws);
             _wSheets.Unprotect(Program.Pws); //снимаем защиту.
             return _wSheets;
         }
-
-
-        /*
-        private List<string> GetRangeBranch(_Worksheet xSheet)
-        {
-            var result = new List<string>();
-            try
-            {
-                var row = xSheet.UsedRange.Rows.Count;
-                var cel = xSheet.UsedRange.Columns.Count;
-
-                for (var i = 1; i <= row; i++)
-                {
-                    for (var j = 1; j <= cel; j++)
-                    {
-                        var vall = (Range) xSheet.Cells[i, j];
-
-                        if (vall != null && vall.Value != null && string.IsNullOrEmpty(vall.Value.ToString()))
-                        {
-                            result.Add($"{vall.Value}");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                //throw;
-            }
-
-            return result;
-        }
-        */
-
-        private _Workbook OpenPackFile(string patch)
-        {
-            return _exApp.Workbooks.Open(patch,CorruptLoad:XlCorruptLoad.xlExtractData);
-        }
-
 
         public void EngPackFiles(List<PackageFilesModel> packages)
         {
             if (File.Exists(Program.TempJsonDB)) File.Delete(Program.TempJsonDB);
 
-            var ItemsPack = new Dictionary<string, object>();
+            var cl = GetColName(Program.cellRange[Program.cellRange.Count() - 1]);
+
+            var itemsPack = new Dictionary<string, object>();
             foreach (var pack in packages)
             {
 
-                //сводный лист по всему выбираемому диапазону
-               /* var final = (Worksheet)_wBoock.Worksheets.Add();
-
-                final.Name =$"Data_{pack.pack.Name}";
-                var ro = 1;*/
-
-                var ListItemsRow= new Dictionary<string, object>();
+                var listItemsRow= new Dictionary<string, object>();
                 foreach (var pm in pack.BrangeFiles)
                 {
-                    // var finalR = final.Range[$"A{ro}"];
-
-
-                    using (var conn = new OleDbConnection($"Provider=Microsoft.ACE.OLEDB.12.0;Data Source='{pm.AbsolutPatch}';Extended Properties=\"Excel 12.0;HDR=YES;IMEX=1\";"))
+                    using (var conn = new OleDbConnection($"Provider=Microsoft.ACE.OLEDB.12.0;Data Source='{pm.AbsolutPatch}';Extended Properties=\"Excel 12.0 Xml;HDR=No;IMEX=0;MAXSCANROWS=6;READONLY=FALSE\";"))
                     {
                         conn.Open();
                         var sh = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
-
+                        if(sh==null) continue;
                         var cmd = conn.CreateCommand();
-                        cmd.CommandText = $"SELECT * FROM [{sh.Rows[0]["TABLE_NAME"]}] ";
-
+                        var str = $"SELECT * FROM [{sh.Rows[0]["TABLE_NAME"].ToString().Replace("'",string.Empty)}A6:{cl}]";
+                        cmd.CommandText = str;
+                        
                         using (var rdr = cmd.ExecuteReader())
                         {
+
                             var query =
                                 (from DbDataRecord row in rdr select row);
 
-
-
-                            var Litem = (from dbRw in query
+                            var litem = (from dbRw in query
                                 where
                                     !string.IsNullOrEmpty(dbRw[Program.cellRange[0]].ToString()) &&
                                     !string.IsNullOrEmpty(dbRw[Program.cellRange[1]].ToString())
                                 select Program.cellRange.ToDictionary(i => $"F{i}", i => dbRw.GetValue(i-1))).ToList();
 
-                            var dic = new Dictionary<string,object>() {};
                             
-                            ListItemsRow.Add(pm.Name,Litem);
+                            listItemsRow.Add(pm.Name,litem);
 
                         }
                     }
-
-                    /*
-                    var wB = OpenPackFile(pm.AbsolutPatch);
-                    
-                    var wS = (_Worksheet)wB.ActiveSheet;
-
-                    //выделяем диапазон необходимых данных
-                    //стольбец лицевых и заполняемых значений 
-                    // (далее по лицевым будем заполнять шаблон)
-                    //далее по логике построения отчёта
-                    //вставляем в шаблон
-                    //Сохраняем отчёт
-
-                    //Исключить шапку и подвал документа
-                    var usR = wS.UsedRange;
-                    var rc = usR.Rows.Count;
-
-                    var addres = GetAddrRange(6, rc, Program.cellRange);
-
-
-
-                    
-                   /* 
-                    try
-                    {
-                        var res =  _exApp.mRange(wS, addres);
-                        ro += res.Rows.Count;
-                        res.Copy(finalR);
-
-                    }
-                    catch(Exception ex)
-                    {
-                        var mss = ex.Message;
-                        MessageBox.Show(mss);
-                    }*
-
-                    wB.Close(false, Missing.Value, Missing.Value);
-
-                    Marshal.ReleaseComObject(wS);
-                    Marshal.ReleaseComObject(wB);*/
                 }
-
-                ItemsPack.Add(pack.pack.Name, ListItemsRow);
+                itemsPack.Add(pack.pack.Name, listItemsRow);
             }
 
-            var json = JsonConvert.SerializeObject(ItemsPack);
-            //_exApp.Visible = true;
-
+            var json = JsonConvert.SerializeObject(itemsPack);
             File.WriteAllText(Program.TempJsonDB, json);
 
         }
@@ -259,18 +156,18 @@ namespace ReportDebtCreators.enginer
             GetSheets();
             //var tocopy = _wSheets;
 
-            var one_out = false;
+            var oneOut = false;
 
 
-            var open_file = File.ReadAllText(Program.TempJsonDB);
-            var data = JsonConvert.DeserializeObject<Dictionary<string,object>>(open_file);
+            var openFile = File.ReadAllText(Program.TempJsonDB);
+            var data = JsonConvert.DeserializeObject<Dictionary<string,object>>(openFile);
 
             foreach (var pack in packages)
             {
 
-                if (!one_out)
+                if (!oneOut)
                 {
-                    one_out = true;
+                    oneOut = true;
                     _wSheets.Name = pack.pack.Name;
                 }
                 else
@@ -282,12 +179,12 @@ namespace ReportDebtCreators.enginer
 
                 var cr = _wSheets.UsedRange.Rows.Count;
 
-                var get_pak =
+                var getPak =
                     (from x in data
                         where x.Key.Equals(pack.pack.Name)
                         select JsonConvert.DeserializeObject<Dictionary<string, object>>(x.Value.ToString())).Single();
 
-                var row = pack.BrangeFiles.Select(brn => (from gg in get_pak
+                var row = pack.BrangeFiles.Select(brn => (from gg in getPak
                     where gg.Key.Equals(brn.Name)
                     select JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(gg.Value.ToString())).Single())
                     .ToList();
@@ -318,12 +215,12 @@ namespace ReportDebtCreators.enginer
 
         private void AddThesData(List<List<Dictionary<string, object>>> row, int r, string param1, string param2)
         {
-            foreach (var _rowList in row)
+            foreach (var rowList in row)
             {
-                foreach (var _row in _rowList)
+                foreach (var xRow in rowList)
                 {
-                    var p1 = (_row.Values.ElementAt(0) ?? "").ToString();
-                    var p2 = (_row.Values.ElementAt(1) ?? "").ToString();
+                    var p1 = (xRow.Values.ElementAt(0) ?? "").ToString();
+                    var p2 = (xRow.Values.ElementAt(1) ?? "").ToString();
 
                     if (p1.Equals(param1) && p2.Equals(param2))
                     {
@@ -339,7 +236,7 @@ namespace ReportDebtCreators.enginer
                             {
                                 continue;
                             }
-                            var v1 = _row[$"F{clr}"];
+                            var v1 = xRow[$"F{clr}"];
                             frm.Value = v1;
                         }
                     }
@@ -347,26 +244,8 @@ namespace ReportDebtCreators.enginer
             }
         }
 
-        private void CreateRootReport()
-        {
-            var wb = CreateWorkbook();
-            //Создание новой книги и листа
-            //Вставка отсортированных данных из шаблона
-            //Сохранение отчёта
 
-        }
-
-        private void CreateAdminReport()
-        {
-
-            //Поиск последнего файла
-            //Получение диапазона имён листов
-            //сравнение с добавляемой информацией
-            //добавление данных / либо создание новой книги
-
-        }
-
-        public void CreateFilseFromFill(List<string> param)
+        public void CreateFilseFromFill(IEnumerable<string> param)
         {
             _fillPacDir = $"{Program.DirCompil}Для филиалов за {DateTime.Now:dd.MM.yyyy}";
             if (!Directory.Exists(_fillPacDir)) Directory.CreateDirectory(_fillPacDir);
@@ -434,12 +313,12 @@ namespace ReportDebtCreators.enginer
                     AllowFiltering: false,
                     AllowUsingPivotTables: _wSheets.Protection.AllowUsingPivotTables);
 
-            var f_name =
+            var fName =
                 $"{_fillPacDir}\\Перечень проблемных потребителей на {DateTime.Now:dd.MM.yyyy} {param}.xlsx";
             
             //newWBoock.Protect(Program.Pws);
             //newWsh.SaveAs(f_name, Type.Missing, Program.Pws, Type.Missing, false,false);
-            newWBoock.SaveAs(f_name, XlFileFormat.xlWorkbookDefault, Type.Missing, Type.Missing,
+            newWBoock.SaveAs(fName, XlFileFormat.xlWorkbookDefault, Type.Missing, Type.Missing,
             false, false, XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing,
             Type.Missing, Type.Missing);
             
@@ -447,31 +326,6 @@ namespace ReportDebtCreators.enginer
 
             Marshal.ReleaseComObject(newWsh);
             Marshal.ReleaseComObject(newWBoock);
-        }
-
-        private void CreateWorksheet(ref Workbook wb, Worksheet ws)
-        {
-            wb.Worksheets.Add(ws);
-        }
-
-        private Workbook CreateWorkbook()
-        {
-            return _exApp.Workbooks.Add(XlWBATemplate.xlWBATWorksheet);
-            //return (Worksheet) wb.Worksheets[DateTime.Now.ToString("dd.MM.yyyy")];
-        }
-
-        private string GetAddrRange(int rowBegin, int rowEnd, int[] cellIndexRange)
-        {
-            var address = string.Empty;
-            foreach (var i in cellIndexRange)
-            {
-                var cN = GetColName(i);
-                address += $"{cN}{rowBegin}:{cN}{rowEnd}{(i!= cellIndexRange[cellIndexRange.Count() - 1] ? ",":string.Empty)}";
-
-            }
-            // A1:A99,D1:D99 ...
-
-            return address;
         }
 
         private string GetColName(int index)
@@ -495,83 +349,24 @@ namespace ReportDebtCreators.enginer
 
     static class Custommer
     {
-        public static Range mRange(this Application app, _Worksheet ws, string addr)
+        public static int ColumnNameToNumber(this string colName)
         {
-            var address = addr.Split(',');
-            return address.Select(s => ws.Range[s]).Aggregate<Range, Range>(null, app.Unionx);
-        }
-
-        public static Range Unionx(this Application app, Range r0, Range r1)
-        {
-            if (r0 == null && r1 == null)
-                return null;
-            if (r0 == null)
-                return r1;
-            if (r1 == null)
-                return r0;
-            return app.Union(r0, r1);
-        }
-
-
-        public static int ColumnNameToNumber(this string col_name)
-        {
-            int result = 0;
+            var result = 0;
 
             // Process each letter.
-            for (int i = 0; i < col_name.Length; i++)
+            foreach (var t in colName)
             {
                 result *= 26;
-                char letter = col_name[i];
+                var letter = t;
 
                 // See if it's out of bounds.
                 if (letter < 'A') letter = 'A';
                 if (letter > 'Z') letter = 'Z';
 
                 // Add in the value of this letter.
-                result += (int)letter - (int)'A' + 1;
+                result += letter - 'A' + 1;
             }
             return result;
-        }
-
-
-        public static void RemoveFirstRow(this Worksheet workSheet, int x=1,int n =1)
-        {
-            var range = workSheet.Range[$"A{x}", $"A{n}"];
-            var row = range.EntireRow;
-            row.Delete(XlDirection.xlDown);
-        }
-        public static void RangeRemoveFirstRow(this Range rng, int n = 1)
-        {
-            var range = rng.Range["A1", "A" + n];
-            var row = range.EntireRow;
-            row.Delete(XlDirection.xlUp);
-        }
-
-        public static DataTable GetDataTable(this Range rn)
-        {
-            var tbl = new DataTable ();
-
-            var cc = rn.Columns.Count;
-            var rc = rn.Rows.Count;
-
-            for (var i = 0; i < cc; i++)
-            {
-                 var x = (object)rn.Cells[1, i + 1].Value2;
-                tbl.Columns.Add(x.ToString(),typeof(string));
-            }
-
-            for (var i = 0; i < cc; i++)
-            {
-                
-                for (var j = 0; j < rc; j++)
-                {
-                   
-
-                }
-                
-            }
-
-            return tbl;
         }
     }
 }
