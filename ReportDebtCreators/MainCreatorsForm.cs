@@ -187,24 +187,5 @@ namespace ReportDebtCreators
             PackToList.DisplayMember = "Name";
             PackToList.ValueMember = "AbsolutPatch";
         }
-
-        /*
-private void PackFromList_SelectedIndexChanged_1(object sender, EventArgs e)
-{
-var select = (StructExelModel)PackageLasts.SelectedItem;
-
-var d = ExelCreator.PackageNameAnalisator(select.Name);
-
-var m = fromPack.Max(x => x.DateIndex);
-
-IList<StructExelModel> result = (from p in fromPack orderby p.DateIndex
-    where (p.DateIndex >= d && p.DateIndex <= m)
-    select p).ToList();
-
-//IList<StructExelModel> rr = (from p in fromPack orderby p.DateIndex descending select p).ToList();
-PackToList.DataSource = result;
-PackToList.DisplayMember = "Name";
-PackToList.ValueMember = "AbsolutPatch";
-}*/
     }
 }

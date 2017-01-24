@@ -130,7 +130,7 @@ namespace ReportDebtCreators.enginer
                                 where
                                     !string.IsNullOrEmpty(dbRw[Program.cellRange[0]].ToString()) &&
                                     !string.IsNullOrEmpty(dbRw[Program.cellRange[1]].ToString())
-                                select Program.cellRange.ToDictionary(i => $"F{i}", i => dbRw.GetValue(i-1))).ToList();
+                                select Program.cellRange.ToDictionary(i => $"F{i}", i => dbRw[i-1])).ToList();
 
                             
                             listItemsRow.Add(pm.Name,litem);
